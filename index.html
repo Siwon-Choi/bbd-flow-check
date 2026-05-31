@@ -235,6 +235,55 @@
         background: rgba(255, 255, 255, 0.64);
       }
 
+      .client-tabs {
+        display: inline-flex;
+        align-self: flex-start;
+        gap: 5px;
+        margin-bottom: 10px;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 8px 20px rgba(38, 66, 94, 0.05);
+      }
+
+      .client-tab {
+        min-width: 148px;
+        padding: 10px 15px;
+        border: 0;
+        border-radius: 10px;
+        color: #7890a7;
+        background: transparent;
+        text-align: left;
+        transition: 180ms ease;
+      }
+
+      .client-tab:hover {
+        color: #315979;
+        background: rgba(233, 244, 254, 0.72);
+      }
+
+      .client-tab.active {
+        color: #eff9ff;
+        background: linear-gradient(135deg, #0a2b4b, #1263a7);
+        box-shadow: 0 7px 16px rgba(18, 99, 167, 0.18);
+      }
+
+      .client-tab strong,
+      .client-tab span {
+        display: block;
+      }
+
+      .client-tab strong {
+        font-size: 13px;
+      }
+
+      .client-tab span {
+        margin-top: 4px;
+        font-size: 10px;
+        opacity: 0.76;
+      }
+
       .flow-tab {
         position: relative;
         display: flex;
@@ -1636,6 +1685,16 @@
           grid-template-columns: 1fr;
         }
 
+        .client-tabs {
+          display: grid;
+          width: 100%;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .client-tab {
+          min-width: 0;
+        }
+
         .flow-tab,
         .flow-tab:last-child {
           min-height: 75px;
@@ -1896,6 +1955,7 @@
           </div>
         </section>
 
+        <nav class="client-tabs" aria-label="클라이언트 채널 선택" id="client-tabs"></nav>
         <nav class="flow-tabs" aria-label="인증 플로우 선택" id="flow-tabs"></nav>
         <section class="flow-panel" id="flow-content"></section>
       </main>
@@ -1956,6 +2016,16 @@
           className: "logo-spring",
           src: "https://spring.io/favicon.svg",
         },
+        mobileApp: {
+          alt: "Mobile app",
+          className: "logo-mobile",
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='16' y='5' width='32' height='54' rx='7' fill='%231263c4'/%3E%3Crect x='20' y='11' width='24' height='37' rx='2' fill='%23eaf4ff'/%3E%3Ccircle cx='32' cy='53' r='2.5' fill='%23ffffff'/%3E%3C/svg%3E",
+        },
+        secureStore: {
+          alt: "Secure token store",
+          className: "logo-token-store",
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M18 28v-8c0-8 6-14 14-14s14 6 14 14v8' fill='none' stroke='%231198a6' stroke-width='7' stroke-linecap='round'/%3E%3Crect x='11' y='26' width='42' height='32' rx='7' fill='%231263c4'/%3E%3Ccircle cx='32' cy='40' r='5' fill='%23ffffff'/%3E%3Cpath d='M32 43v8' stroke='%23ffffff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E",
+        },
       };
 
       const actors = {
@@ -1967,7 +2037,22 @@
         itemService: { label: "Item Service", meta: "LOCALHOST · 8082" },
         dashboardBff: { label: "Dashboard BFF", meta: "DESIGN TBD" },
         domainServices: { label: "Domain Services", meta: "WIDGET APIS · TBD" },
+        mobileApp: { label: "Mobile App", meta: "NATIVE CLIENT" },
+        secureStore: { label: "Secure Token Store", meta: "ACCESS TOKEN" },
       };
+
+      const clientTabs = [
+        {
+          id: "web",
+          title: "웹",
+          subtitle: "JSESSIONID · HttpSession",
+        },
+        {
+          id: "mobile",
+          title: "모바일",
+          subtitle: "Authorization · Bearer JWT",
+        },
+      ];
 
       const flowTabs = [
         {
@@ -1993,6 +2078,33 @@
           number: "04",
           title: "대시보드 API 요청",
           subtitle: "Dashboard BFF · 위젯 API 조합",
+        },
+      ];
+
+      const mobileFlowTabs = [
+        {
+          id: "login",
+          number: "01",
+          title: "모바일 로그인 · 토큰 저장",
+          subtitle: "Mobile App · Keycloak · Secure Store",
+        },
+        {
+          id: "me",
+          number: "02",
+          title: "/api/auth/me Bearer 확인",
+          subtitle: "Authorization Header · JWT 검증 · 사용자 상태",
+        },
+        {
+          id: "api",
+          number: "03",
+          title: "모바일 일반 서비스 API",
+          subtitle: "Bearer JWT · Gateway · item-service",
+        },
+        {
+          id: "dashboard",
+          number: "04",
+          title: "모바일 대시보드 API",
+          subtitle: "Dashboard BFF · Token relay · 위젯 조합",
         },
       ];
 
@@ -3803,7 +3915,7 @@
         ],
       };
 
-      const flowDefinitions = {
+      const webFlowDefinitions = {
         login: {
           title: "Flow 01. 로그인 시작부터 세션 저장 후 프런트 복귀까지",
           description:
@@ -3852,6 +3964,701 @@
           emptyEvidence:
             "이 단계는 대시보드 설계 후보입니다. 위젯 목록과 API 계약이 정해지면 상세 팝업을 확장할 수 있습니다.",
         },
+      };
+
+      function mobileStage({
+        id,
+        number,
+        from,
+        to,
+        label,
+        protocol,
+        title,
+        summary,
+        note,
+        exchange,
+        tone = "",
+        selectedLabel,
+      }) {
+        return {
+          id,
+          number,
+          from,
+          to,
+          label,
+          protocol,
+          title,
+          summary,
+          note,
+          exchange,
+          tone,
+          selectedLabel,
+          evidence: [],
+        };
+      }
+
+      const mobileLoginRouteStages = [
+        mobileStage({
+          id: "mobile-keycloak-authorize",
+          number: "01",
+          from: "mobileApp",
+          to: "keycloak",
+          label: "Keycloak 로그인 시작 · PKCE 확인 필요",
+          protocol: "GET · DESIGN TBD",
+          title: "모바일 앱이 Keycloak 로그인 화면을 엽니다",
+          summary:
+            "모바일 앱은 네이티브 브라우저 또는 시스템 인증 세션을 통해 Keycloak Authorization Endpoint를 엽니다.",
+          note:
+            "모바일 전용 Keycloak client-id, redirect URI, PKCE code_challenge 설정은 제공된 Gateway 코드에서 확인할 수 없어 DESIGN TBD로 표시합니다.",
+          tone: "design-tbd",
+          selectedLabel: "MOBILE CLIENT TBD",
+          exchange: [
+            ["DESTINATION", "Keycloak Authorization Endpoint", "모바일 로그인 화면을 여는 Keycloak 엔드포인트입니다."],
+            ["RECOMMENDED", "Authorization Code + PKCE", "네이티브 앱에서는 client secret을 앱에 넣지 않고 PKCE를 사용하는 구성을 확인해야 합니다."],
+            ["VERIFY", "mobile client-id / redirect URI", "Keycloak에 등록할 모바일 전용 클라이언트 설정이 필요합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "keycloak-mobile-code",
+          number: "02",
+          from: "keycloak",
+          to: "mobileApp",
+          label: "앱 Callback URI로 Authorization Code 전달",
+          protocol: "302 CALLBACK",
+          title: "Keycloak이 모바일 앱 Callback으로 돌아갑니다",
+          summary:
+            "사용자 로그인이 성공하면 Keycloak은 Authorization Code와 state를 모바일 앱의 등록된 Callback URI로 전달합니다.",
+          note:
+            "웹의 Gateway callback과 달리 모바일 전용 redirect URI가 필요합니다. 실제 URI scheme 또는 universal link는 모바일 앱 설정에서 확정해야 합니다.",
+          tone: "design-tbd",
+          selectedLabel: "REDIRECT URI TBD",
+          exchange: [
+            ["CALLBACK", "myapp://oauth/callback?code=...&state=...", "설명을 위한 예시입니다. 실제 앱 URI는 별도로 확정해야 합니다."],
+            ["VALIDATE", "state", "최초 인증 요청과 Callback 응답이 연결되는지 앱이 확인합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-keycloak-token",
+          number: "03",
+          from: "mobileApp",
+          to: "keycloak",
+          label: "Authorization Code를 토큰으로 교환",
+          protocol: "POST · TOKEN",
+          title: "모바일 앱이 Keycloak Token Endpoint를 호출합니다",
+          summary:
+            "모바일 앱은 Authorization Code와 PKCE code_verifier를 Keycloak Token Endpoint로 보내 토큰을 요청합니다.",
+          note:
+            "앱 내부에 client secret을 포함하는 방식으로 확정하지 않습니다. 모바일 클라이언트 설정과 PKCE 적용 여부를 함께 검증해야 합니다.",
+          tone: "design-tbd",
+          selectedLabel: "PKCE VERIFY",
+          exchange: [
+            ["METHOD", "POST", "Token Endpoint에 보내는 서버 요청입니다."],
+            ["FORM DATA", "grant_type, code, redirect_uri, client_id", "Authorization Code 교환에 필요한 기본 값입니다."],
+            ["PKCE", "code_verifier", "Authorization 요청의 code_challenge와 쌍을 이루는 값입니다."],
+          ],
+        }),
+        mobileStage({
+          id: "keycloak-mobile-tokens",
+          number: "04",
+          from: "keycloak",
+          to: "mobileApp",
+          label: "Access Token · Refresh Token 응답",
+          protocol: "JSON",
+          title: "Keycloak이 모바일 앱에 토큰을 반환합니다",
+          summary:
+            "Keycloak Token Endpoint는 모바일 앱에 Access Token과 필요 시 Refresh Token, ID Token을 반환합니다.",
+          note:
+            "Gateway API 호출에는 Access Token을 Authorization 헤더에 Bearer 방식으로 담습니다.",
+          exchange: [
+            ["ACCESS TOKEN", "access_token", "Gateway Resource Server가 검증할 JWT입니다."],
+            ["REFRESH TOKEN", "refresh_token", "Access Token 갱신 정책에 따라 보안 저장소에 관리합니다."],
+            ["ID TOKEN", "id_token", "OIDC 로그인 결과를 나타내며 API Authorization 헤더에는 Access Token을 사용합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-secure-store-save",
+          number: "05",
+          from: "mobileApp",
+          to: "secureStore",
+          label: "토큰을 앱 보안 저장소에 보관",
+          protocol: "INTERNAL",
+          title: "모바일 앱이 토큰을 보안 저장소에 저장합니다",
+          summary:
+            "웹의 JSESSIONID 쿠키 대신 모바일 앱은 발급받은 토큰을 플랫폼 보안 저장소에 관리합니다.",
+          note:
+            "iOS Keychain, Android Keystore 기반 저장소 등 실제 구현 라이브러리는 모바일 프로젝트에서 확인해야 합니다.",
+          exchange: [
+            ["SAVE", "access_token", "API 요청 시 Bearer 헤더를 만들기 위해 사용합니다."],
+            ["SAVE POLICY", "refresh_token · optional", "갱신 정책이 있다면 더 엄격하게 보호해야 합니다."],
+            ["DO NOT USE", "JSESSIONID cookie", "모바일 API 호출 경로에서는 웹 세션 쿠키를 기준으로 인증하지 않습니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-auth-header-ready",
+          number: "06",
+          from: "secureStore",
+          to: "mobileApp",
+          label: "Bearer Authorization 헤더 사용 준비",
+          protocol: "READY",
+          title: "모바일 API 요청 준비가 완료됩니다",
+          summary:
+            "이후 모바일 앱은 보호된 API 요청마다 Access Token을 Authorization 헤더로 전달합니다.",
+          note:
+            "헤더 이름은 Authorization이며, 값 형식은 Bearer 뒤에 Access Token을 붙이는 방식입니다.",
+          exchange: [
+            ["HEADER", "Authorization: Bearer &lt;access_token&gt;", "모바일 보호 API 요청에 포함할 인증 헤더입니다."],
+            ["SERVER", "Gateway Resource Server", "Gateway가 JWT 서명과 issuer 등을 검증합니다."],
+          ],
+        }),
+      ];
+
+      const mobileMeRouteStages = [
+        mobileStage({
+          id: "mobile-gateway-auth-me",
+          number: "01",
+          from: "mobileApp",
+          to: "gateway",
+          label: "/api/auth/me 요청 · Bearer JWT 포함",
+          protocol: "GET",
+          title: "모바일 앱이 현재 사용자 확인 API를 호출합니다",
+          summary:
+            "모바일 앱은 JSESSIONID 쿠키 대신 Access Token을 Authorization 헤더에 넣어 Gateway의 /api/auth/me를 호출합니다.",
+          note:
+            "웹과 모바일이 같은 엔드포인트를 사용할 수 있지만 인증 정보를 전달하는 방식은 다릅니다.",
+          exchange: [
+            ["REQUEST", "GET /api/auth/me", "Gateway의 현재 사용자 확인 API입니다."],
+            ["HEADER", "Authorization: Bearer &lt;access_token&gt;", "모바일 앱이 직접 구성하는 Bearer 인증 헤더입니다."],
+            ["NO COOKIE", "JSESSIONID 미사용", "모바일 Resource Server 경로에서는 HttpSession 조회를 기준으로 하지 않습니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-gateway-jwt-verify",
+          number: "02",
+          from: "gateway",
+          to: "gateway",
+          label: "Gateway Resource Server JWT 검증",
+          protocol: "INTERNAL · JWT",
+          title: "Gateway가 Access Token을 검증합니다",
+          summary:
+            "Gateway Resource Server는 issuer-uri 설정을 기준으로 JWT의 서명, issuer, 만료 시간 등을 검증하고 Authentication을 만듭니다.",
+          note:
+            "제공된 YAML에 spring.security.oauth2.resourceserver.jwt.issuer-uri가 있으므로 이 경로는 Gateway 설정에서 확인됩니다. Keycloak을 매 요청마다 호출한다는 의미는 아닙니다.",
+          tone: "gateway-internal",
+          exchange: [
+            ["CONFIG", "spring.security.oauth2.resourceserver.jwt.issuer-uri", "Keycloak realm issuer를 기준으로 JWT Decoder가 구성됩니다."],
+            ["VERIFY", "signature, iss, exp", "Access Token의 위변조 여부와 유효 기간을 검사합니다."],
+            ["CREATE", "JwtAuthenticationToken", "검증 성공 후 현재 요청의 Authentication이 구성됩니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-auth-controller",
+          number: "03",
+          from: "gateway",
+          to: "gateway",
+          label: "AuthController에 Authentication 주입",
+          protocol: "INTERNAL",
+          title: "AuthController가 모바일 요청의 Authentication을 받습니다",
+          summary:
+            "Controller 메서드에는 Resource Server가 복원한 Authentication이 주입됩니다.",
+          note:
+            "현재 AuthController의 OidcUser 분기는 웹 oauth2Login principal을 위한 코드입니다. 모바일 Jwt principal에서도 username, sub를 반환하려면 Jwt claim 분기를 추가해야 합니다.",
+          tone: "design-tbd",
+          selectedLabel: "CONTROLLER CHECK",
+          exchange: [
+            ["CURRENT", "authenticated, name", "일반 Authentication 기준으로 현재 코드에서 반환 가능한 값입니다."],
+            ["VERIFY", "principal instanceof Jwt", "모바일 JWT claim을 읽는 Controller 분기가 추가로 필요한지 확인합니다."],
+            ["EXPECTED CLAIMS", "preferred_username, sub", "모바일 응답에도 필요하다면 Jwt에서 꺼내도록 구현해야 합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-auth-me-response",
+          number: "04",
+          from: "gateway",
+          to: "mobileApp",
+          label: "모바일 사용자 상태 JSON 반환",
+          protocol: "JSON",
+          title: "Gateway가 모바일 앱에 사용자 상태를 반환합니다",
+          summary:
+            "JWT 검증과 Controller 판단 결과를 모바일 앱이 JSON으로 받습니다.",
+          note:
+            "username, sub의 실제 포함 여부는 AuthController의 Jwt principal 대응 구현 후 확정됩니다.",
+          tone: "design-tbd",
+          selectedLabel: "CLAIMS CHECK",
+          exchange: [
+            ["AUTHENTICATED", '{ "authenticated": true, "name": "..." }', "현재 공통 Authentication 기준의 최소 응답입니다."],
+            ["AFTER EXTENSION", "username, sub", "Jwt claim 대응을 추가하면 웹 응답과 맞출 수 있습니다."],
+          ],
+        }),
+      ];
+
+      const mobileApiRouteStages = [
+        mobileStage({
+          id: "mobile-api-request",
+          number: "01",
+          from: "mobileApp",
+          to: "gateway",
+          label: "/api/items/** 요청 · Bearer JWT 포함",
+          protocol: "HTTP",
+          title: "모바일 앱이 일반 서비스 API를 호출합니다",
+          summary:
+            "모바일 앱은 업무 요청마다 Access Token을 Authorization 헤더에 담아 Gateway로 전달합니다.",
+          note:
+            "웹 브라우저의 자동 쿠키 전송과 달리 모바일 앱 코드가 Authorization 헤더를 명시적으로 구성합니다.",
+          exchange: [
+            ["PATH", "/api/items/**", "현재 Gateway YAML에서 item-service로 연결된 경로입니다."],
+            ["HEADER", "Authorization: Bearer &lt;access_token&gt;", "모바일 앱이 전달하는 Access Token입니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-api-jwt-verify",
+          number: "02",
+          from: "gateway",
+          to: "gateway",
+          label: "Access Token 검증과 권한 확인",
+          protocol: "INTERNAL · JWT",
+          title: "Gateway가 Bearer JWT를 검증합니다",
+          summary:
+            "Gateway Resource Server가 Access Token을 검증하고 요청에 Authentication을 연결합니다.",
+          note:
+            "실제 경로별 permitAll, authenticated, role 정책은 SecurityConfig에서 추가 확인해야 합니다.",
+          tone: "gateway-internal",
+          exchange: [
+            ["FILTER", "BearerTokenAuthenticationFilter", "Authorization 헤더에서 Bearer Token을 읽는 Resource Server 필터입니다."],
+            ["VERIFY", "JWT signature / issuer / expiration", "유효한 토큰인지 확인합니다."],
+            ["AUTHORIZE", "SecurityConfig 정책", "경로별 권한 규칙을 적용합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-api-forward",
+          number: "03",
+          from: "gateway",
+          to: "itemService",
+          label: "/api/items/** → item-service 라우팅",
+          protocol: "FORWARD",
+          title: "Gateway가 item-service로 요청을 전달합니다",
+          summary:
+            "JWT 검증을 통과한 요청은 Gateway Path predicate에 따라 localhost:8082의 item-service로 전달됩니다.",
+          note:
+            "Access Token을 downstream까지 전달할지, Gateway에서만 검증할지는 item-service 보안 구조에 맞춰 확정해야 합니다.",
+          tone: "design-tbd",
+          selectedLabel: "TOKEN RELAY TBD",
+          exchange: [
+            ["ROUTE", "Path=/api/items/**", "제공된 Gateway YAML에서 확인된 predicate입니다."],
+            ["URI", "http://localhost:8082", "현재 item-service 목적지입니다."],
+            ["VERIFY", "downstream token relay", "item-service가 JWT를 직접 검증하는지 확인해야 합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-api-service-response",
+          number: "04",
+          from: "itemService",
+          to: "gateway",
+          label: "업무 처리 결과 반환",
+          protocol: "HTTP RESPONSE",
+          title: "item-service가 Gateway에 응답합니다",
+          summary:
+            "item-service가 업무 JSON 또는 오류 상태를 Gateway로 반환합니다.",
+          note:
+            "Gateway timeout은 현재 connect-timeout 3000ms, response-timeout 5s 설정입니다.",
+          exchange: [
+            ["SUCCESS", "2xx + business JSON", "정상 업무 응답입니다."],
+            ["FAILURE", "4xx / 5xx / timeout", "오류 상태는 Gateway를 거쳐 모바일 앱으로 전달됩니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-api-response",
+          number: "05",
+          from: "gateway",
+          to: "mobileApp",
+          label: "모바일 앱에 업무 JSON 반환",
+          protocol: "HTTP RESPONSE",
+          title: "Gateway가 모바일 앱에 최종 응답을 반환합니다",
+          summary:
+            "모바일 앱은 Gateway를 통해 업무 JSON을 받고 화면 상태를 갱신합니다.",
+          note:
+            "업무 응답 body에 Access Token이나 Refresh Token을 다시 포함하지 않습니다.",
+          exchange: [
+            ["SUCCESS", "HTTP 2xx + item JSON", "모바일 화면에 사용할 업무 데이터입니다."],
+            ["TOKEN EXPOSURE", "토큰 미포함", "토큰은 앱 보안 저장소에서 별도로 관리합니다."],
+          ],
+        }),
+      ];
+
+      const mobileDashboardRouteStages = [
+        mobileStage({
+          id: "mobile-dashboard-request",
+          number: "01",
+          from: "mobileApp",
+          to: "dashboardBff",
+          label: "대시보드 요약 요청 · Bearer JWT 포함",
+          protocol: "DESIGN TBD",
+          title: "모바일 앱이 Dashboard BFF 요약 API를 호출합니다",
+          summary:
+            "모바일 앱은 대시보드 화면용 요청에도 Authorization Bearer 헤더를 전달합니다.",
+          note:
+            "Dashboard BFF의 배포 위치와 실제 요약 API 경로는 아직 제공되지 않아 DESIGN TBD입니다.",
+          tone: "design-tbd",
+          selectedLabel: "BFF ENDPOINT TBD",
+          exchange: [
+            ["CANDIDATE", "GET /api/dashboard/summary", "화면 조합 API의 예시 경로입니다."],
+            ["HEADER", "Authorization: Bearer &lt;access_token&gt;", "모바일 앱이 전달하는 인증 헤더입니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-dashboard-token-relay",
+          number: "02",
+          from: "dashboardBff",
+          to: "gateway",
+          label: "Gateway로 Bearer Token relay",
+          protocol: "DESIGN TBD",
+          title: "Dashboard BFF가 Gateway 호출 인증 방식을 적용합니다",
+          summary:
+            "BFF가 Gateway를 통해 위젯 API를 호출한다면 사용자 Access Token을 relay하거나 별도 내부 인증 정책을 적용해야 합니다.",
+          note:
+            "현재 제공된 코드에는 Dashboard BFF 구현이 없으므로 token relay 방식은 DESIGN TBD입니다.",
+          tone: "design-tbd",
+          selectedLabel: "TOKEN RELAY TBD",
+          exchange: [
+            ["OPTION A", "Authorization: Bearer &lt;access_token&gt;", "사용자 Access Token을 Gateway 호출에 이어서 전달합니다."],
+            ["OPTION B", "internal service auth", "BFF와 Gateway 사이 별도 내부 인증을 설계합니다."],
+            ["DECIDE", "BFF security policy", "실제 배포 구조와 권한 책임에 맞춰 확정해야 합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-dashboard-fanout",
+          number: "03",
+          from: "gateway",
+          to: "domainServices",
+          label: "위젯별 도메인 API 전달",
+          protocol: "DESIGN TBD",
+          title: "Gateway가 도메인 서비스로 위젯 요청을 라우팅합니다",
+          summary:
+            "Gateway는 인증 정책을 통과한 위젯 요청을 각 도메인 서비스로 전달합니다.",
+          note:
+            "현재 YAML에서 확인된 downstream route는 /api/items/** 하나입니다. 추가 위젯 route는 아직 필요합니다.",
+          tone: "design-tbd",
+          selectedLabel: "ROUTES TBD",
+          exchange: [
+            ["CONFIRMED", "/api/items/** → item-service", "현재 Gateway YAML에 존재하는 route입니다."],
+            ["ADD", "sales / procurement / other widgets", "대시보드 요구사항에 따라 route를 추가합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-dashboard-domain-results",
+          number: "04",
+          from: "domainServices",
+          to: "gateway",
+          label: "위젯별 결과 수집",
+          protocol: "JSON",
+          title: "도메인 서비스가 위젯 결과를 반환합니다",
+          summary:
+            "각 서비스의 성공, 실패, timeout 결과가 Gateway를 거쳐 Dashboard BFF로 돌아갑니다.",
+          note:
+            "부분 실패 정책과 위젯별 timeout은 BFF 설계에서 확정해야 합니다.",
+          tone: "design-tbd",
+          exchange: [
+            ["SUCCESS", "widget business JSON", "위젯 화면에 필요한 데이터입니다."],
+            ["FAILURE", "timeout / 4xx / 5xx", "위젯별 오류 상태를 분리해서 처리합니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-dashboard-bff-results",
+          number: "05",
+          from: "gateway",
+          to: "dashboardBff",
+          label: "Dashboard BFF가 결과 조합",
+          protocol: "JSON",
+          title: "Dashboard BFF가 모바일 화면 DTO를 구성합니다",
+          summary:
+            "BFF는 위젯별 결과를 모바일 화면에서 바로 사용할 수 있는 요약 JSON으로 조합합니다.",
+          note:
+            "브라우저와 모바일이 같은 DTO를 사용할지 별도 최적화 DTO를 둘지는 화면 요구사항에 맞춰 정합니다.",
+          tone: "design-tbd",
+          exchange: [
+            ["BODY", "widgets, partial, lastUpdated", "화면 조합 DTO의 예시 필드입니다."],
+            ["REMOVE", "token / internal headers", "모바일 응답 body에 인증 토큰을 다시 넣지 않습니다."],
+          ],
+        }),
+        mobileStage({
+          id: "mobile-dashboard-response",
+          number: "06",
+          from: "dashboardBff",
+          to: "mobileApp",
+          label: "모바일 대시보드 JSON 반환",
+          protocol: "JSON",
+          title: "모바일 앱이 대시보드 요약 결과를 받습니다",
+          summary:
+            "모바일 앱은 조합된 위젯 JSON을 받아 대시보드 화면을 렌더링합니다.",
+          note:
+            "실제 BFF API 계약이 확정되면 위젯 목록과 DTO 예시를 업데이트해야 합니다.",
+          tone: "design-tbd",
+          exchange: [
+            ["RESPONSE", "dashboard summary JSON", "모바일 대시보드 렌더링에 사용할 결과입니다."],
+            ["AUTH", "Bearer Token은 앱 보안 저장소 유지", "응답 body에는 토큰을 노출하지 않습니다."],
+          ],
+        }),
+      ];
+
+      const mobileSimpleFlowSequences = {
+        login: [
+          {
+            id: "mobileApp",
+            meta: "LOGIN START",
+            route: {
+              stageId: "mobile-keycloak-authorize",
+              stageIds: ["mobile-keycloak-authorize", "keycloak-mobile-code"],
+              number: "01",
+              protocol: "PKCE · TBD",
+              label: "Keycloak 로그인 후 Authorization Code 수신",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "keycloak",
+            meta: "OIDC PROVIDER",
+            route: {
+              stageId: "mobile-keycloak-token",
+              stageIds: ["mobile-keycloak-token", "keycloak-mobile-tokens"],
+              number: "02",
+              protocol: "TOKEN",
+              label: "Code를 Access Token으로 교환",
+            },
+          },
+          {
+            id: "mobileApp",
+            meta: "TOKEN RECEIVED",
+            route: {
+              stageId: "mobile-secure-store-save",
+              stageIds: ["mobile-secure-store-save"],
+              number: "03",
+              protocol: "INTERNAL",
+              label: "토큰을 앱 보안 저장소에 저장",
+            },
+          },
+          {
+            id: "secureStore",
+            meta: "ACCESS TOKEN",
+            route: {
+              stageId: "mobile-auth-header-ready",
+              stageIds: ["mobile-auth-header-ready"],
+              number: "04",
+              protocol: "READY",
+              label: "Authorization: Bearer 헤더 사용 준비",
+            },
+          },
+          { id: "mobileApp", meta: "AUTHENTICATED" },
+        ],
+        me: [
+          {
+            id: "mobileApp",
+            meta: "APP ENTRY",
+            route: {
+              stageId: "mobile-gateway-auth-me",
+              stageIds: ["mobile-gateway-auth-me"],
+              number: "01",
+              protocol: "GET",
+              label: "/api/auth/me · Bearer JWT 전달",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "RESOURCE SERVER",
+            route: {
+              stageId: "mobile-gateway-jwt-verify",
+              stageIds: ["mobile-gateway-jwt-verify", "mobile-auth-controller"],
+              number: "02",
+              protocol: "JWT",
+              label: "Access Token 검증 후 Authentication 주입",
+              tone: "gateway-internal",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "AUTH CONTROLLER",
+            route: {
+              stageId: "mobile-auth-me-response",
+              stageIds: ["mobile-auth-me-response"],
+              number: "03",
+              protocol: "JSON",
+              label: "로그인 사용자 상태 반환",
+              tone: "design-tbd",
+            },
+          },
+          { id: "mobileApp", meta: "USER STATE" },
+        ],
+        api: [
+          {
+            id: "mobileApp",
+            meta: "BUSINESS REQUEST",
+            route: {
+              stageId: "mobile-api-request",
+              stageIds: ["mobile-api-request"],
+              number: "01",
+              protocol: "HTTP",
+              label: "/api/items/** · Bearer JWT 전달",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "RESOURCE SERVER",
+            route: {
+              stageId: "mobile-api-jwt-verify",
+              stageIds: ["mobile-api-jwt-verify", "mobile-api-forward"],
+              number: "02",
+              protocol: "JWT",
+              label: "JWT 검증 후 item-service 라우팅",
+              tone: "gateway-internal",
+            },
+          },
+          {
+            id: "itemService",
+            meta: "DOMAIN PROCESS",
+            route: {
+              stageId: "mobile-api-service-response",
+              stageIds: ["mobile-api-service-response", "mobile-api-response"],
+              number: "03",
+              protocol: "JSON",
+              label: "업무 JSON을 모바일 앱에 반환",
+            },
+          },
+          { id: "mobileApp", meta: "BUSINESS JSON" },
+        ],
+        dashboard: [
+          {
+            id: "mobileApp",
+            meta: "DASHBOARD ENTRY",
+            route: {
+              stageId: "mobile-dashboard-request",
+              stageIds: ["mobile-dashboard-request"],
+              number: "01",
+              protocol: "DESIGN TBD",
+              label: "대시보드 요약 요청 · Bearer JWT",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "dashboardBff",
+            meta: "SUMMARY API · TBD",
+            route: {
+              stageId: "mobile-dashboard-token-relay",
+              stageIds: ["mobile-dashboard-token-relay"],
+              number: "02",
+              protocol: "DESIGN TBD",
+              label: "Gateway 호출용 Token relay 정책 적용",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "WIDGET ROUTES",
+            route: {
+              stageId: "mobile-dashboard-fanout",
+              stageIds: ["mobile-dashboard-fanout", "mobile-dashboard-domain-results"],
+              number: "03",
+              protocol: "DESIGN TBD",
+              label: "도메인 서비스별 위젯 결과 수집",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "domainServices",
+            meta: "WIDGET APIS · TBD",
+            route: {
+              stageId: "mobile-dashboard-bff-results",
+              stageIds: ["mobile-dashboard-bff-results", "mobile-dashboard-response"],
+              number: "04",
+              protocol: "JSON",
+              label: "모바일 화면용 요약 JSON 반환",
+              tone: "design-tbd",
+            },
+          },
+          { id: "mobileApp", meta: "WIDGET RENDER" },
+        ],
+      };
+
+      const mobileFlowDefinitions = {
+        login: {
+          title: "Flow 01. 모바일 로그인과 Access Token 저장",
+          description:
+            "모바일 앱은 웹 JSESSIONID 세션 대신 Keycloak에서 받은 Access Token을 앱 보안 저장소에 관리합니다. 모바일 client와 PKCE 설정은 확인이 필요합니다.",
+          scope: "MOBILE LOGIN · 6 ROUTES",
+          heroScope: "MOBILE · 01 · LOGIN",
+          actorSequence: [
+            { id: "mobileApp", meta: "LOGIN START" },
+            { id: "keycloak", meta: "AUTHORIZATION" },
+            { id: "mobileApp", meta: "CALLBACK" },
+            { id: "keycloak", meta: "TOKEN ENDPOINT" },
+            { id: "mobileApp", meta: "TOKEN RESPONSE" },
+            { id: "secureStore", meta: "SECURE SAVE" },
+            { id: "mobileApp", meta: "AUTH HEADER READY" },
+          ],
+          routeStages: mobileLoginRouteStages,
+          simpleSequence: mobileSimpleFlowSequences.login,
+          emptyEvidence:
+            "모바일 전용 Keycloak client-id, redirect URI, PKCE 적용 설정은 모바일 프로젝트와 Keycloak 설정에서 추가 확인해야 합니다.",
+        },
+        me: {
+          title: "Flow 02. 모바일 /api/auth/me Bearer JWT 확인",
+          description:
+            "모바일 앱은 Authorization: Bearer 헤더를 보내고, Gateway Resource Server가 JWT를 검증한 뒤 AuthController에 Authentication을 주입합니다.",
+          scope: "MOBILE AUTH ME · 4 ROUTES",
+          heroScope: "MOBILE · 02 · AUTH ME",
+          actorSequence: [
+            { id: "mobileApp", meta: "AUTH ME REQUEST" },
+            { id: "gateway", meta: "RESOURCE SERVER" },
+            { id: "gateway", meta: "JWT AUTHENTICATION" },
+            { id: "gateway", meta: "AUTH CONTROLLER" },
+            { id: "mobileApp", meta: "USER STATE" },
+          ],
+          routeStages: mobileMeRouteStages,
+          simpleSequence: mobileSimpleFlowSequences.me,
+          emptyEvidence:
+            "현재 AuthController는 OidcUser claim 분기를 포함합니다. 모바일 Jwt principal에서도 username과 sub가 필요하면 Jwt claim 분기를 추가해야 합니다.",
+        },
+        api: {
+          title: "Flow 03. 모바일 일반 서비스 API와 Bearer JWT",
+          description:
+            "모바일 앱이 Access Token을 Authorization 헤더에 담아 /api/items/**를 요청하고, Gateway가 JWT 검증 후 item-service로 라우팅합니다.",
+          scope: "MOBILE SERVICE API · 5 ROUTES",
+          heroScope: "MOBILE · 03 · SERVICE API",
+          actorSequence: [
+            { id: "mobileApp", meta: "BUSINESS REQUEST" },
+            { id: "gateway", meta: "RESOURCE SERVER" },
+            { id: "gateway", meta: "ROUTE PREDICATE" },
+            { id: "itemService", meta: "DOMAIN PROCESS" },
+            { id: "gateway", meta: "DOWNSTREAM RESPONSE" },
+            { id: "mobileApp", meta: "BUSINESS JSON" },
+          ],
+          routeStages: mobileApiRouteStages,
+          simpleSequence: mobileSimpleFlowSequences.api,
+          emptyEvidence:
+            "Gateway 이후 item-service까지 Access Token을 relay할지, Gateway에서만 검증할지는 downstream 보안 구조에 맞춰 확정해야 합니다.",
+        },
+        dashboard: {
+          title: "Flow 04. 모바일 Dashboard BFF와 Bearer Token relay",
+          description:
+            "모바일 앱은 Dashboard BFF에도 Bearer JWT를 전달합니다. BFF의 Gateway 호출 인증 방식과 위젯 route는 아직 DESIGN TBD입니다.",
+          scope: "MOBILE DASHBOARD · 6 ROUTES",
+          heroScope: "MOBILE · 04 · DASHBOARD",
+          actorSequence: [
+            { id: "mobileApp", meta: "DASHBOARD ENTRY" },
+            { id: "dashboardBff", meta: "SUMMARY API · TBD" },
+            { id: "gateway", meta: "TOKEN RELAY · TBD" },
+            { id: "domainServices", meta: "WIDGET APIS · TBD" },
+            { id: "gateway", meta: "RESULTS" },
+            { id: "dashboardBff", meta: "COMPOSE JSON" },
+            { id: "mobileApp", meta: "WIDGET RENDER" },
+          ],
+          routeStages: mobileDashboardRouteStages,
+          simpleSequence: mobileSimpleFlowSequences.dashboard,
+          emptyEvidence:
+            "Dashboard BFF 구현 코드가 아직 없으므로 모바일 Token relay 정책과 위젯별 Gateway route를 추가로 확정해야 합니다.",
+        },
+      };
+
+      const platformFlowDefinitions = {
+        web: webFlowDefinitions,
+        mobile: mobileFlowDefinitions,
       };
 
       const details = {
@@ -5130,6 +5937,7 @@ procurement / pending</pre>
       };
 
       const initialParams = new URLSearchParams(window.location.search);
+      let activeClient = initialParams.get("client") === "mobile" ? "mobile" : "web";
       let activeFlow = initialParams.get("flow") ?? "login";
       let activeStage = initialParams.get("stage") ?? "";
       let activeView = initialParams.get("view") === "simple" ? "simple" : "detail";
@@ -5140,7 +5948,7 @@ procurement / pending</pre>
       }
 
       function getActiveFlowDefinition() {
-        return flowDefinitions[activeFlow];
+        return platformFlowDefinitions[activeClient][activeFlow];
       }
 
       function ensureActiveStage() {
@@ -5171,8 +5979,27 @@ procurement / pending</pre>
         `;
       }
 
+      function renderClientTabs() {
+        document.querySelector("#client-tabs").innerHTML = clientTabs
+          .map(
+            (client) => `
+              <button
+                class="client-tab ${client.id === activeClient ? "active" : ""}"
+                data-client="${client.id}"
+                type="button"
+              >
+                <strong>${client.title}</strong>
+                <span>${client.subtitle}</span>
+              </button>
+            `,
+          )
+          .join("");
+      }
+
       function renderTabs() {
-        document.querySelector("#flow-tabs").innerHTML = flowTabs
+        const tabs = activeClient === "mobile" ? mobileFlowTabs : flowTabs;
+
+        document.querySelector("#flow-tabs").innerHTML = tabs
           .map(
             (flow) => `
               <button
@@ -5460,6 +6287,7 @@ procurement / pending</pre>
         const flowDefinition = getActiveFlowDefinition();
 
         ensureActiveStage();
+        renderClientTabs();
         renderTabs();
         document.querySelector("#current-scope").textContent =
           flowDefinition.heroScope;
@@ -5510,6 +6338,7 @@ procurement / pending</pre>
       }
 
       document.addEventListener("click", (event) => {
+        const clientButton = event.target.closest("[data-client]");
         const flowButton = event.target.closest("[data-flow]");
         const viewButton = event.target.closest("[data-view]");
         const stageButton = event.target.closest("[data-stage]");
@@ -5519,6 +6348,12 @@ procurement / pending</pre>
         const detailButton = event.target.closest("[data-detail]");
         const closeButton = event.target.closest("[data-modal-close]");
         const backdrop = event.target.closest("#modal-backdrop");
+
+        if (clientButton) {
+          activeClient = clientButton.dataset.client;
+          activeStage = "";
+          renderFlow();
+        }
 
         if (flowButton) {
           activeFlow = flowButton.dataset.flow;
