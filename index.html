@@ -1,0 +1,5590 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071d34" />
+    <title>BBD Auth Flow | 1차 컨펌</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color: #25354a;
+        background: #edf3f8;
+        font-family: "Noto Sans KR", sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --navy-950: #071d34;
+        --navy-900: #0a2948;
+        --navy-800: #10385c;
+        --blue-700: #1263c4;
+        --blue-600: #1975dc;
+        --blue-100: #eaf4ff;
+        --cyan-100: #e5fbfc;
+        --cyan-600: #1198a6;
+        --ink: #25354a;
+        --muted: #7d8b9c;
+        --line: #dce5ee;
+        --soft-line: #e9eff5;
+        --panel: #ffffff;
+        --shadow: 0 18px 40px rgba(38, 66, 94, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 96% 2%, rgba(58, 150, 229, 0.1), transparent 25rem),
+          #edf3f8;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .page-shell {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .topbar {
+        position: sticky;
+        z-index: 10;
+        top: 0;
+        display: flex;
+        min-height: 68px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 38px;
+        border-bottom: 1px solid rgba(209, 222, 234, 0.86);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(18px);
+      }
+
+      .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        color: #fff;
+        background: linear-gradient(145deg, #0b2c4c, #1264ba);
+        box-shadow: 0 7px 15px rgba(23, 93, 159, 0.2);
+        font-family: "Inter", sans-serif;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: -0.08em;
+      }
+
+      .topbar-brand strong,
+      .topbar-brand span {
+        display: block;
+      }
+
+      .topbar-brand strong {
+        color: #19334e;
+        font-family: "Inter", sans-serif;
+        font-size: 15px;
+        letter-spacing: 0.05em;
+      }
+
+      .topbar-brand span {
+        margin-top: 2px;
+        color: #96a5b6;
+        font-size: 10px;
+      }
+
+      .review-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 11px;
+        border: 1px solid #dce8f3;
+        border-radius: 999px;
+        color: #66829e;
+        background: #f8fbfe;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .review-badge::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #2dbb88;
+        box-shadow: 0 0 0 4px rgba(45, 187, 136, 0.12);
+        content: "";
+      }
+
+      main {
+        width: min(100% - 52px, 1580px);
+        margin: 0 auto;
+        padding: 24px 0 0;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hero {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 18px;
+        flex-shrink: 0;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--blue-600);
+        font-family: "Inter", sans-serif;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+      }
+
+      .eyebrow::before {
+        width: 22px;
+        height: 2px;
+        background: var(--blue-600);
+        content: "";
+      }
+
+      h1 {
+        margin: 12px 0 7px;
+        color: #18324d;
+        font-size: clamp(27px, 3vw, 38px);
+        letter-spacing: -0.075em;
+      }
+
+      .hero p {
+        margin: 0;
+        color: #78899b;
+        font-size: 14px;
+        line-height: 1.8;
+      }
+
+      .hero-side {
+        display: flex;
+        gap: 10px;
+      }
+
+      .hero-metric {
+        min-width: 110px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.68);
+      }
+
+      .hero-metric span,
+      .hero-metric strong {
+        display: block;
+      }
+
+      .hero-metric span {
+        color: #9ba8b7;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+      }
+
+      .hero-metric strong {
+        margin-top: 5px;
+        color: #274663;
+        font-family: "Inter", sans-serif;
+        font-size: 17px;
+      }
+
+      .flow-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-bottom: 12px;
+        flex-shrink: 0;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.64);
+      }
+
+      .flow-tab {
+        position: relative;
+        display: flex;
+        min-height: 92px;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 19px;
+        border: 0;
+        border-right: 1px solid var(--line);
+        color: #7b8b9d;
+        background: transparent;
+        text-align: left;
+        transition: 180ms ease;
+      }
+
+      .flow-tab:last-child {
+        border-right: 0;
+      }
+
+      .flow-tab:hover {
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .flow-tab.active {
+        color: #f0f8ff;
+        background: linear-gradient(135deg, #0a2b4b, #0f4779);
+      }
+
+      .flow-tab.active::after {
+        position: absolute;
+        right: 17px;
+        bottom: 0;
+        left: 17px;
+        height: 3px;
+        border-radius: 4px 4px 0 0;
+        background: #52bdf0;
+        content: "";
+      }
+
+      .tab-number {
+        color: inherit;
+        font-family: "Inter", sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        opacity: 0.38;
+      }
+
+      .flow-tab.active .tab-number {
+        opacity: 0.9;
+      }
+
+      .flow-tab span,
+      .flow-tab strong {
+        display: block;
+      }
+
+      .flow-tab strong {
+        color: inherit;
+        font-size: 14px;
+        letter-spacing: -0.03em;
+      }
+
+      .flow-tab span:last-child {
+        margin-top: 5px;
+        font-size: 11px;
+        opacity: 0.76;
+      }
+
+      .flow-panel {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .flow-panel-head {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 22px 25px;
+        border-bottom: 1px solid var(--soft-line);
+      }
+
+      .flow-panel-head h2 {
+        margin: 0;
+        overflow-wrap: anywhere;
+        color: #1f3d5c;
+        font-size: 18px;
+        letter-spacing: -0.055em;
+      }
+
+      .flow-panel-head p {
+        margin: 7px 0 0;
+        color: #91a0b0;
+        font-size: 12px;
+      }
+
+      .scope-chip {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border-radius: 999px;
+        color: #117a85;
+        background: #e7f9fa;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+      }
+
+      .flow-panel-actions {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .flow-view-tabs {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid #dce6ee;
+        border-radius: 999px;
+        background: #f7fafc;
+      }
+
+      .flow-view-tab {
+        padding: 7px 10px;
+        border: 0;
+        border-radius: 999px;
+        color: #8293a3;
+        background: transparent;
+        font-size: 10px;
+        font-weight: 800;
+        transition: 150ms ease;
+      }
+
+      .flow-view-tab:hover {
+        color: #397ba6;
+      }
+
+      .flow-view-tab.active {
+        color: #fff;
+        background: linear-gradient(135deg, #176ea9, #2993ca);
+        box-shadow: 0 4px 10px rgba(35, 134, 203, 0.18);
+      }
+
+      .stage-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .actor-rail {
+        padding: 25px 18px;
+        border-right: 1px solid var(--soft-line);
+        background: #f9fbfd;
+      }
+
+      .rail-label {
+        color: #9aa9b9;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.17em;
+        align-self: flex-start;
+      }
+
+      .actors {
+        margin-top: 22px;
+      }
+
+      .actor {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 67px;
+      }
+
+      .actor:last-child {
+        padding-bottom: 0;
+      }
+
+      .actor:not(:last-child)::after {
+        position: absolute;
+        top: 53px;
+        left: 26px;
+        width: 1px;
+        height: 43px;
+        border-left: 1px dashed #bdcad7;
+        content: "";
+      }
+
+      .actor-icon,
+      .mini-actor-icon {
+        position: relative;
+        flex: 0 0 auto;
+        border: 1px solid #dce5ee;
+        border-radius: 15px;
+        background: #fff;
+        box-shadow: 0 6px 15px rgba(42, 72, 102, 0.06);
+        overflow: hidden;
+      }
+
+      .actor-icon {
+        width: 64px;
+        height: 64px;
+      }
+
+      .mini-actor-icon {
+        width: 27px;
+        height: 27px;
+        border-radius: 8px;
+      }
+
+      .actor-icon img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+      }
+
+      .mini-actor-icon img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        object-fit: contain;
+      }
+
+      .logo-chrome,
+      .logo-spring,
+      .logo-keycloak,
+      .logo-react,
+      .logo-redis {
+        filter: none;
+      }
+
+      .actor span,
+      .actor strong {
+        display: block;
+      }
+
+      .actor strong {
+        color: #304a64;
+        font-size: 13px;
+      }
+
+      .actor span {
+        margin-top: 4px;
+        color: #9aa9b9;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .stage-main {
+        min-width: 0;
+        padding: 25px;
+        overflow-y: auto;
+      }
+
+      .stage-note {
+        display: flex;
+        align-items: start;
+        gap: 11px;
+        padding: 13px 15px;
+        border: 1px solid #d6e9f4;
+        border-radius: 11px;
+        color: #557891;
+        background: #f3fbff;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+
+      .stage-note-icon {
+        display: grid;
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        background: #40a4d7;
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .trace-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 17px;
+      }
+
+      .trace-row {
+        display: grid;
+        grid-template-columns: 43px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 13px;
+        padding: 14px 15px;
+        border: 1px solid #e5ecf2;
+        border-radius: 12px;
+        background: #fff;
+        transition: 160ms ease;
+      }
+
+      .trace-row:hover {
+        border-color: #c9dfef;
+        box-shadow: 0 7px 17px rgba(63, 105, 141, 0.07);
+        transform: translateY(-1px);
+      }
+
+      .trace-index {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 50%;
+        color: #1b74c9;
+        background: #e9f4ff;
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .trace-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        color: #7e92a4;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .trace-arrow {
+        color: #9bafc1;
+        font-family: "Inter", sans-serif;
+      }
+
+      .trace-row h3 {
+        margin: 6px 0 0;
+        color: #2c455f;
+        font-size: 13px;
+        letter-spacing: -0.03em;
+      }
+
+      .trace-row p {
+        margin: 5px 0 0;
+        color: #8798a9;
+        font-size: 11px;
+        line-height: 1.65;
+      }
+
+      .detail-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 10px;
+        border: 1px solid #d7e5f1;
+        border-radius: 8px;
+        color: #52738f;
+        background: #f8fbfe;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+        transition: 150ms ease;
+      }
+
+      .detail-button:hover {
+        border-color: #b9d8ed;
+        color: #1f6fa8;
+        background: #f0f9ff;
+      }
+
+      .detail-button::after {
+        font-size: 13px;
+        content: "+";
+      }
+
+      .config-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .code-card,
+      .checkpoint-card {
+        min-width: 0;
+        padding: 15px;
+        border: 1px solid #e3ebf2;
+        border-radius: 12px;
+        background: #fbfcfe;
+      }
+
+      .card-label {
+        color: #8c9dac;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+
+      pre {
+        margin: 12px 0 0;
+        overflow: auto;
+        overflow-wrap: anywhere;
+        color: #4a6076;
+        font-family: "Consolas", "SFMono-Regular", monospace;
+        font-size: 11px;
+        line-height: 1.65;
+        word-break: break-word;
+        white-space: pre-wrap;
+      }
+
+      .checkpoint-card ul {
+        display: grid;
+        gap: 9px;
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .checkpoint-card li {
+        position: relative;
+        padding-left: 17px;
+        color: #718396;
+        font-size: 11px;
+        line-height: 1.55;
+      }
+
+      .checkpoint-card li::before {
+        position: absolute;
+        top: 0.58em;
+        left: 0;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #35ad91;
+        content: "";
+      }
+
+      .flow-rail {
+        position: relative;
+        padding: 30px 27px;
+        transition: 180ms ease;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .route-stack {
+        display: grid;
+        gap: 0;
+        margin-top: 25px;
+        transition: 180ms ease;
+        width: min(100%, 320px);
+      }
+
+      .flow-actor {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .flow-actor strong,
+      .flow-actor span {
+        display: block;
+      }
+
+      .flow-actor strong {
+        color: #304a64;
+        font-size: 15px;
+      }
+
+      .flow-actor span {
+        margin-top: 5px;
+        color: #9aa9b9;
+        font-family: "Inter", sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .route-connector {
+        position: relative;
+        min-height: 98px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .route-connector::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+        border-left: 1px dashed #bfd0de;
+        content: "";
+      }
+
+      .route-control {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        width: 100%;
+        min-height: 74px;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 13px;
+        border: 1px solid #dbe7f0;
+        border-radius: 10px;
+        color: #668096;
+        background: #fff;
+        box-shadow: 0 5px 12px rgba(57, 87, 116, 0.045);
+        text-align: left;
+        transition: 160ms ease;
+      }
+
+      .route-control:hover {
+        border-color: #bed9ea;
+        color: #276f9d;
+        transform: translateX(2px);
+      }
+
+      .route-control.active {
+        border-color: #2386cb;
+        color: #fff;
+        background: linear-gradient(135deg, #146aa9, #1f91cb);
+        box-shadow: 0 9px 17px rgba(35, 134, 203, 0.2);
+      }
+
+      .route-control.keycloak-standard {
+        border-color: #d6e9e6;
+        color: #4d7e7b;
+        background: #fbfefd;
+      }
+
+      .route-control.keycloak-standard:hover {
+        border-color: #add9d3;
+        color: #257a74;
+        background: #f6fcfb;
+      }
+
+      .route-control.keycloak-standard.active {
+        border-color: #2b9991;
+        color: #fff;
+        background: linear-gradient(135deg, #287f7a, #31a49b);
+        box-shadow: 0 9px 17px rgba(43, 153, 145, 0.2);
+      }
+
+      .route-control.gateway-internal {
+        border-style: dashed;
+      }
+
+      .route-control.frontend-internal {
+        border-color: #dce2f3;
+        border-style: dashed;
+        color: #69799a;
+        background: #fcfdff;
+      }
+
+      .route-control.frontend-internal.active {
+        border-color: #687fab;
+        color: #fff;
+        background: linear-gradient(135deg, #5a6f9e, #758ab5);
+        box-shadow: 0 9px 17px rgba(90, 111, 158, 0.2);
+      }
+
+      .route-control.redis-planned {
+        border-color: #f0d0cc;
+        border-style: dashed;
+        color: #a85a51;
+        background: #fffafa;
+      }
+
+      .route-control.redis-planned:hover {
+        border-color: #dfa59d;
+        color: #a94338;
+        background: #fff6f5;
+      }
+
+      .route-control.redis-planned.active {
+        border-color: #cb6155;
+        color: #fff;
+        background: linear-gradient(135deg, #a9473e, #d66b5d);
+        box-shadow: 0 9px 17px rgba(190, 83, 72, 0.2);
+      }
+
+      .route-control.design-tbd {
+        border-color: #eadca8;
+        border-style: dashed;
+        color: #96752c;
+        background: #fffdf7;
+      }
+
+      .route-control.design-tbd:hover {
+        border-color: #d8be65;
+        color: #85631c;
+        background: #fffaf0;
+      }
+
+      .route-control.design-tbd.active {
+        border-color: #c69b35;
+        color: #fff;
+        background: linear-gradient(135deg, #a37820, #d2aa45);
+        box-shadow: 0 9px 17px rgba(184, 139, 43, 0.2);
+      }
+
+      .route-arrow {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 50%;
+        color: #2479af;
+        background: #e9f5fd;
+        font-family: "Inter", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .route-control.active .route-arrow {
+        color: #0d6da8;
+        background: #fff;
+      }
+
+      .route-control span,
+      .route-control strong {
+        display: block;
+      }
+
+      .route-control span:not(.route-arrow) {
+        color: inherit;
+        font-family: "Inter", sans-serif;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        opacity: 0.76;
+      }
+
+      .route-control strong {
+        margin-top: 5px;
+        color: inherit;
+        font-size: 13px;
+        letter-spacing: -0.025em;
+      }
+
+      .stage-detail-grid {
+        display: grid;
+        align-content: start;
+        gap: 14px;
+        border-left: 1px solid var(--soft-line);
+        transition: 180ms ease;
+        overflow-y: auto;
+      }
+
+      .detail-panel-toolbar {
+        display: flex;
+        justify-content: end;
+      }
+
+      .detail-collapse-button,
+      .detail-restore-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid #dbe7f0;
+        color: #607f97;
+        background: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        transition: 150ms ease;
+      }
+
+      .detail-collapse-button {
+        padding: 8px 10px 8px 13px;
+        border-radius: 999px;
+      }
+
+      .detail-collapse-button:hover,
+      .detail-restore-button:hover {
+        border-color: #b9d9eb;
+        color: #1f77a9;
+        background: #f5fbff;
+      }
+
+      .detail-collapse-button b,
+      .detail-restore-button b {
+        display: grid;
+        width: 20px;
+        height: 20px;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        background: #2b8dc7;
+        font-family: "Inter", sans-serif;
+        font-size: 15px;
+        line-height: 1;
+      }
+
+      .stage-grid.detail-collapsed {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .detail-collapsed .flow-rail {
+        border-right: 0;
+        padding: 36px 42px 30px;
+      }
+
+      .detail-collapsed .route-stack {
+        width: min(100%, 940px);
+        margin-right: auto;
+        margin-left: auto;
+      }
+
+      .detail-collapsed .route-control {
+        min-height: 82px;
+      }
+
+      .detail-collapsed .route-control strong {
+        font-size: 14px;
+      }
+
+      .detail-restore-bar {
+        display: flex;
+        grid-column: 1 / -1;
+        justify-content: center;
+        padding: 13px 20px 16px;
+        border-top: 1px solid var(--soft-line);
+        background: #f7fafc;
+      }
+
+      .detail-restore-button {
+        padding: 9px 12px 9px 15px;
+        border-radius: 999px;
+        box-shadow: 0 5px 12px rgba(45, 99, 137, 0.06);
+      }
+
+      .detail-inline-restore {
+        position: absolute;
+        top: 24px;
+        right: 29px;
+        z-index: 2;
+      }
+
+      .selection-card {
+        min-width: 0;
+        padding: 21px;
+        border: 1px solid #e1eaf1;
+        border-radius: 13px;
+        background: #fff;
+      }
+
+      .empty-evidence {
+        padding: 16px;
+        border: 1px dashed #d6e9e6;
+        border-radius: 10px;
+        color: #5f8582;
+        background: #f8fcfb;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .selection-card-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 15px;
+      }
+
+      .selected-chip,
+      .evidence-count {
+        display: inline-flex;
+        flex: 0 0 auto;
+        padding: 6px 9px;
+        border-radius: 999px;
+        color: #1976ad;
+        background: #e9f6fd;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+      }
+
+      .selected-chip.redis-planned {
+        color: #ad4f45;
+        background: #fff0ee;
+      }
+
+      .selected-chip.design-tbd {
+        color: #8e6b21;
+        background: #fff7dc;
+      }
+
+      .simple-flow-shell {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 24px 26px 34px;
+        background: #f8fbfd;
+      }
+
+      .simple-flow-intro {
+        width: min(100%, 680px);
+        margin: 0 auto 16px;
+        padding: 13px 15px;
+        border: 1px solid #dfebf3;
+        border-radius: 11px;
+        color: #698397;
+        background: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+        line-height: 1.65;
+      }
+
+      .simple-flow-list {
+        position: relative;
+        width: min(100%, 680px);
+        margin: 0 auto;
+        padding: 6px 0 24px;
+      }
+
+      .simple-flow-list::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+        border-left: 1px dashed #c7dce9;
+        content: "";
+        transform: translateX(-50%);
+      }
+
+      .simple-actor {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        min-height: 78px;
+        grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
+        align-items: center;
+      }
+
+      .simple-actor-icon {
+        grid-column: 2;
+        justify-self: center;
+      }
+
+      .simple-actor-copy {
+        grid-column: 3;
+        min-width: 0;
+        padding-left: 16px;
+      }
+
+      .simple-actor-copy strong,
+      .simple-actor-copy span {
+        display: block;
+      }
+
+      .simple-actor-copy strong {
+        color: #1f4362;
+        font-size: 15px;
+        letter-spacing: -0.035em;
+      }
+
+      .simple-actor-copy span {
+        margin-top: 5px;
+        overflow-wrap: anywhere;
+        color: #8bb1d2;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+      }
+
+      .simple-route-card {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        width: min(100% - 32px, 560px);
+        min-height: 74px;
+        grid-template-columns: 30px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        margin: 5px auto;
+        padding: 13px 16px;
+        border: 1px solid #dce9f1;
+        border-radius: 11px;
+        color: #6691a9;
+        background: rgba(255, 255, 255, 0.92);
+        text-align: left;
+        transition: 150ms ease;
+      }
+
+      .simple-route-card:hover {
+        border-color: #b8d7e8;
+        color: #327ca5;
+        box-shadow: 0 7px 15px rgba(66, 111, 144, 0.08);
+        transform: translateY(-1px);
+      }
+
+      .simple-route-card.active {
+        border-color: #8fc9e6;
+        background: #f1faff;
+        box-shadow: 0 7px 15px rgba(66, 137, 181, 0.1);
+      }
+
+      .simple-route-card.redis-planned {
+        border-color: #efd8d4;
+        color: #ad675f;
+        background: #fffafa;
+      }
+
+      .simple-route-card.design-tbd {
+        border-color: #eadca8;
+        color: #96752c;
+        background: #fffdf7;
+      }
+
+      .simple-route-arrow {
+        display: grid;
+        width: 27px;
+        height: 27px;
+        place-items: center;
+        border-radius: 50%;
+        color: #1684bd;
+        background: #e9f6fd;
+        font-family: "Inter", sans-serif;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .simple-route-card.redis-planned .simple-route-arrow {
+        color: #b75c51;
+        background: #fff0ee;
+      }
+
+      .simple-route-card.design-tbd .simple-route-arrow {
+        color: #9d7725;
+        background: #fff7dc;
+      }
+
+      .simple-route-copy span,
+      .simple-route-copy strong {
+        display: block;
+      }
+
+      .simple-route-copy span {
+        color: inherit;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        opacity: 0.68;
+      }
+
+      .simple-route-copy strong {
+        margin-top: 6px;
+        color: inherit;
+        font-size: 13px;
+        letter-spacing: -0.03em;
+      }
+
+      .selection-kicker {
+        color: #7d91a4;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+      }
+
+      .selection-card h3 {
+        margin: 9px 0 0;
+        color: #274762;
+        font-size: 19px;
+        letter-spacing: -0.055em;
+      }
+
+      .selection-card > p,
+      .selection-card-head p {
+        margin: 8px 0 0;
+        color: #7e90a1;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .direction-line {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 18px;
+        color: #668096;
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .exchange-list {
+        display: grid;
+        gap: 1px;
+        margin-top: 18px;
+        overflow: hidden;
+        border: 1px solid #e4ebf2;
+        border-radius: 9px;
+        background: #e4ebf2;
+      }
+
+      .exchange-row {
+        display: grid;
+        grid-template-columns: 165px minmax(0, 1fr);
+        gap: 17px;
+        padding: 14px 15px;
+        background: #fbfdff;
+      }
+
+      .exchange-row dt,
+      .exchange-row dd {
+        margin: 0;
+      }
+
+      .exchange-row dt {
+        color: #8b9dad;
+        font-family: "Inter", sans-serif;
+        padding-top: 2px;
+        color: #6f879d;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+      }
+
+      .exchange-row dd {
+        overflow-wrap: anywhere;
+      }
+
+      .exchange-value,
+      .exchange-description {
+        display: block;
+      }
+
+      .exchange-value {
+        color: #2d5575;
+        font-family: "Consolas", "SFMono-Regular", monospace;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.65;
+      }
+
+      .exchange-description {
+        margin-top: 5px;
+        color: #8596a6;
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+
+      .exchange-note {
+        margin-top: 13px !important;
+        padding: 12px 13px;
+        border-radius: 8px;
+        color: #52728b !important;
+        background: #f1f9fd;
+      }
+
+      .exchange-note:empty {
+        display: none;
+      }
+
+      .evidence-list {
+        display: grid;
+        gap: 9px;
+        margin-top: 15px;
+      }
+
+      .evidence-item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 13px;
+        border: 1px solid #e5ecf2;
+        border-radius: 9px;
+        background: #fbfcfe;
+      }
+
+      .evidence-item span,
+      .evidence-item strong {
+        display: block;
+      }
+
+      .evidence-item span {
+        color: #8a9aaa;
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.11em;
+      }
+
+      .evidence-item strong {
+        margin-top: 5px;
+        color: #466078;
+        font-size: 12px;
+      }
+
+      .evidence-item p {
+        margin: 5px 0 0;
+        color: #8a9aaa;
+        font-size: 11px;
+        line-height: 1.6;
+      }
+
+      .placeholder {
+        display: grid;
+        flex: 1;
+        place-items: center;
+        padding: 45px;
+        text-align: center;
+      }
+
+      .placeholder-mark {
+        display: grid;
+        width: 66px;
+        height: 66px;
+        margin: 0 auto;
+        place-items: center;
+        border: 1px solid #dbe6ef;
+        border-radius: 20px;
+        color: #5698cb;
+        background: #f2f9ff;
+        font-family: "Inter", sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .placeholder h2 {
+        margin: 18px 0 7px;
+        color: #294864;
+        font-size: 21px;
+        letter-spacing: -0.06em;
+      }
+
+      .placeholder p {
+        max-width: 510px;
+        margin: 0;
+        color: #8a99a8;
+        font-size: 13px;
+        line-height: 1.8;
+      }
+
+      .placeholder-next {
+        display: inline-flex;
+        margin-top: 17px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        color: #9a7a2e;
+        background: #fff7dc;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        z-index: 30;
+        display: none;
+        place-items: center;
+        inset: 0;
+        padding: 24px;
+        background: rgba(23, 34, 47, 0.58);
+        backdrop-filter: blur(4px);
+      }
+
+      .modal-backdrop.open {
+        display: grid;
+      }
+
+      .modal {
+        width: min(100%, 960px);
+        max-height: min(90vh, 880px);
+        overflow: auto;
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 30px 80px rgba(0, 19, 38, 0.3);
+        animation: modal-in 170ms ease;
+      }
+
+      @keyframes modal-in {
+        from {
+          opacity: 0;
+          transform: translateY(8px) scale(0.985);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .modal-head {
+        position: sticky;
+        z-index: 2;
+        top: 0;
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 23px 25px 19px;
+        border-bottom: 1px solid var(--soft-line);
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(14px);
+      }
+
+      .modal-kicker {
+        color: var(--blue-600);
+        font-family: "Inter", sans-serif;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.17em;
+      }
+
+      .modal h2 {
+        margin: 8px 0 0;
+        color: #1f3e5d;
+        font-size: 21px;
+        letter-spacing: -0.06em;
+      }
+
+      .modal-close {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        flex: 0 0 auto;
+        border: 1px solid #dde7ef;
+        border-radius: 50%;
+        color: #7990a4;
+        background: #f8fbfd;
+        place-items: center;
+        font-family: "Inter", sans-serif;
+        font-size: 18px;
+      }
+
+      .modal-body {
+        display: grid;
+        gap: 14px;
+        padding: 21px 25px 25px;
+      }
+
+      .modal-section {
+        padding: 15px 16px;
+        border: 1px solid #e4ebf2;
+        border-radius: 11px;
+      }
+
+      .modal-section h3 {
+        margin: 0;
+        color: #38546f;
+        font-size: 13px;
+      }
+
+      .modal-section p {
+        margin: 8px 0 0;
+        color: #748699;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+
+      .modal-section code,
+      td code,
+      .inline-code {
+        padding: 2px 5px;
+        border-radius: 4px;
+        color: #1f658f;
+        background: #eaf5fb;
+        font-family: "Consolas", monospace;
+        font-size: 0.94em;
+      }
+
+      .modal-section pre {
+        max-height: 265px;
+        padding: 13px;
+        border-radius: 8px;
+        color: #d8ebf9;
+        background: #102c46;
+        font-size: 11px;
+      }
+
+      .modal-list {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .modal-list li {
+        position: relative;
+        padding-left: 15px;
+        color: #718396;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+
+      .modal-list li::before {
+        position: absolute;
+        top: 0.65em;
+        left: 0;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4eabd6;
+        content: "";
+      }
+
+      .modal-table-wrap {
+        margin-top: 10px;
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #66798d;
+        font-size: 11px;
+      }
+
+      th,
+      td {
+        padding: 9px 10px;
+        border: 1px solid #e3ebf2;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: #47627c;
+        background: #f7fafc;
+        font-size: 10px;
+      }
+
+      .optional {
+        color: #a06a1e;
+        background: #fff5dd;
+      }
+
+      .source-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .source-links a {
+        padding: 7px 9px;
+        border: 1px solid #dce8f1;
+        border-radius: 7px;
+        color: #4d7694;
+        background: #f9fcfe;
+        font-size: 10px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      @media (max-width: 940px) {
+        main {
+          width: min(100% - 32px, 900px);
+          padding-top: 31px;
+        }
+
+        .topbar {
+          padding: 0 20px;
+        }
+
+        .hero {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .flow-tabs {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-tab,
+        .flow-tab:last-child {
+          min-height: 75px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .flow-tab:last-child {
+          border-bottom: 0;
+        }
+
+        .stage-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .actor-rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--soft-line);
+        }
+
+        .stage-detail-grid {
+          border-left: 0;
+        }
+
+        .route-stack {
+          width: min(100%, 620px);
+        }
+
+        .actors {
+          display: flex;
+          gap: 11px;
+        }
+
+        .actor {
+          min-width: 0;
+          flex: 1;
+          align-items: start;
+          flex-direction: column;
+          padding: 0;
+        }
+
+        .actor:not(:last-child)::after {
+          display: none;
+        }
+      }
+
+      @media (max-width: 680px) {
+        main {
+          width: min(100% - 22px, 620px);
+          padding: 23px 0 38px;
+        }
+
+        .topbar {
+          min-height: 61px;
+          padding: 0 13px;
+        }
+
+        .topbar-brand span,
+        .review-badge {
+          display: none;
+        }
+
+        .hero-side {
+          width: 100%;
+        }
+
+        .hero-metric {
+          min-width: 0;
+          flex: 1;
+          padding: 10px 11px;
+        }
+
+        .hero-metric strong {
+          font-size: 15px;
+        }
+
+        .flow-panel-head,
+        .stage-main {
+          padding: 17px;
+        }
+
+        .flow-panel-head {
+          align-items: start;
+          flex-direction: column;
+          gap: 11px;
+        }
+
+        .flow-panel-actions {
+          width: 100%;
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .flow-view-tabs {
+          width: 100%;
+        }
+
+        .flow-view-tab {
+          flex: 1;
+        }
+
+        .actor-rail {
+          padding: 18px 15px;
+        }
+
+        .actor-icon {
+          width: 45px;
+          height: 45px;
+          border-radius: 13px;
+        }
+
+        .actor-icon img {
+          width: 25px;
+          height: 25px;
+        }
+
+        .route-connector {
+          min-height: 69px;
+          padding-top: 7px;
+          padding-bottom: 7px;
+        }
+
+        .route-control {
+          min-height: 55px;
+        }
+
+        .simple-flow-shell {
+          padding: 17px 9px 27px;
+        }
+
+        .simple-flow-intro {
+          width: min(100% - 12px, 680px);
+        }
+
+        .simple-actor {
+          grid-template-columns: minmax(0, 1fr) 62px minmax(0, 1fr);
+        }
+
+        .simple-actor-copy {
+          padding-left: 12px;
+        }
+
+        .simple-actor-copy strong {
+          font-size: 13px;
+        }
+
+        .simple-route-card {
+          width: min(100% - 8px, 560px);
+          padding: 11px 12px;
+        }
+
+        .detail-collapsed .flow-rail {
+          padding: 24px 20px;
+        }
+
+        .detail-inline-restore {
+          position: static;
+          margin-top: 12px;
+        }
+
+        .exchange-row {
+          grid-template-columns: 1fr;
+          gap: 5px;
+        }
+
+        .evidence-item {
+          grid-template-columns: 1fr;
+        }
+
+        .detail-button {
+          justify-self: start;
+        }
+
+        .actor span {
+          font-size: 8px;
+        }
+
+        .trace-row {
+          grid-template-columns: 34px minmax(0, 1fr);
+          gap: 9px;
+          padding: 12px;
+        }
+
+        .trace-index {
+          width: 29px;
+          height: 29px;
+        }
+
+        .detail-button {
+          grid-column: 2;
+          justify-self: start;
+        }
+
+        .config-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .modal-backdrop {
+          padding: 11px;
+        }
+
+        .modal-head {
+          padding: 18px 18px 15px;
+        }
+
+        .modal-body {
+          padding: 15px 16px 18px;
+        }
+      }
+
+      .site-footer {
+        flex-shrink: 0;
+        padding: 12px 38px;
+        border-top: 1px solid rgba(209, 222, 234, 0.7);
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        color: #9baab9;
+        font-family: "Inter", sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="brand-mark">BBD</div>
+          <div>
+            <strong>AUTH FLOW REVIEW</strong>
+            <span>Hyundai Parts BBD · OAuth2 / OIDC</span>
+          </div>
+        </div>
+        <span class="review-badge">1차 컨펌 자료</span>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div>
+            <span class="eyebrow">AUTHENTICATION ARCHITECTURE</span>
+            <h1>서비스 인증 흐름 상세 설계</h1>
+            <p>
+              화면에서 출발한 요청이 Gateway와 Keycloak 사이에서 어떻게 이동하는지 단계별로 확인합니다.<br />
+              각 단계의 <strong>상세 보기</strong>를 누르면 근거 코드와 URL 구성 요소를 함께 볼 수 있습니다.
+            </p>
+          </div>
+          <div class="hero-side">
+            <div class="hero-metric">
+              <span>TOTAL FLOW</span>
+              <strong>04</strong>
+            </div>
+            <div class="hero-metric">
+              <span>CURRENT SCOPE</span>
+              <strong id="current-scope">01 · LOGIN</strong>
+            </div>
+          </div>
+        </section>
+
+        <nav class="flow-tabs" aria-label="인증 플로우 선택" id="flow-tabs"></nav>
+        <section class="flow-panel" id="flow-content"></section>
+      </main>
+      <footer class="site-footer">
+        © 2024 BBD · Hyundai Parts · OAuth2 / OIDC Auth Flow &nbsp;·&nbsp; Internal Review Document
+      </footer>
+    </div>
+
+    <div
+      aria-hidden="true"
+      aria-labelledby="modal-title"
+      class="modal-backdrop"
+      id="modal-backdrop"
+      role="dialog"
+    >
+      <article class="modal" id="modal"></article>
+    </div>
+
+    <script>
+      const logos = {
+        browser: {
+          alt: "Google Chrome",
+          className: "logo-chrome",
+          src: "https://www.google.com/chrome/static/images/chrome-logo-m100.svg",
+        },
+        gateway: {
+          alt: "Spring",
+          className: "logo-spring",
+          src: "https://spring.io/favicon.svg",
+        },
+        keycloak: {
+          alt: "Keycloak",
+          className: "logo-keycloak",
+          src: "https://www.keycloak.org/resources/images/icon.svg",
+        },
+        frontend: {
+          alt: "React",
+          className: "logo-react",
+          src: "https://react.dev/favicon.ico",
+        },
+        redis: {
+          alt: "Redis",
+          className: "logo-redis",
+          src: "https://redis.io/favicon.ico",
+        },
+        itemService: {
+          alt: "Spring service",
+          className: "logo-spring",
+          src: "https://spring.io/favicon.svg",
+        },
+        dashboardBff: {
+          alt: "Spring Dashboard BFF",
+          className: "logo-spring",
+          src: "https://spring.io/favicon.svg",
+        },
+        domainServices: {
+          alt: "Spring domain services",
+          className: "logo-spring",
+          src: "https://spring.io/favicon.svg",
+        },
+      };
+
+      const actors = {
+        browser: { label: "Browser", meta: "LOGIN PAGE" },
+        gateway: { label: "Gateway", meta: "SPRING SECURITY" },
+        keycloak: { label: "Keycloak", meta: "OIDC PROVIDER" },
+        frontend: { label: "Frontend", meta: "REACT APP" },
+        redis: { label: "Redis", meta: "SESSION STORE" },
+        itemService: { label: "Item Service", meta: "LOCALHOST · 8082" },
+        dashboardBff: { label: "Dashboard BFF", meta: "DESIGN TBD" },
+        domainServices: { label: "Domain Services", meta: "WIDGET APIS · TBD" },
+      };
+
+      const flowTabs = [
+        {
+          id: "login",
+          number: "01",
+          title: "서비스 접근 이후 로그인",
+          subtitle: "Browser · Gateway · Keycloak · Session",
+        },
+        {
+          id: "me",
+          number: "02",
+          title: "/api/auth/me 세션 확인",
+          subtitle: "사이트 진입 · 세션 복원 · 화면 분기",
+        },
+        {
+          id: "api",
+          number: "03",
+          title: "일반 서비스 API 요청",
+          subtitle: "Gateway · item-service · 응답 반환",
+        },
+        {
+          id: "dashboard",
+          number: "04",
+          title: "대시보드 API 요청",
+          subtitle: "Dashboard BFF · 위젯 API 조합",
+        },
+      ];
+
+      const actorSequence = [
+        { id: "browser", meta: "LOGIN PAGE" },
+        { id: "gateway", meta: "SPRING SECURITY" },
+        { id: "browser", meta: "REDIRECT FOLLOW" },
+        { id: "keycloak", meta: "AUTHORIZATION ENDPOINT" },
+        { id: "browser", meta: "LOGIN FORM" },
+        { id: "keycloak", meta: "LOGIN PROCESS" },
+        { id: "browser", meta: "CALLBACK FOLLOW" },
+        { id: "gateway", meta: "CALLBACK FILTER" },
+        { id: "keycloak", meta: "TOKEN ENDPOINT" },
+        { id: "gateway", meta: "TOKEN RESPONSE" },
+        { id: "gateway", meta: "SESSION BUILD" },
+        { id: "redis", meta: "SPRING SESSION · SWITCH TBD" },
+        { id: "gateway", meta: "SUCCESS HANDLER" },
+        { id: "browser", meta: "AUTHENTICATED" },
+      ];
+
+      const routeStages = [
+        {
+          id: "browser-gateway-entry",
+          number: "01",
+          from: "browser",
+          to: "gateway",
+          label: "인증 진입 요청",
+          protocol: "GET",
+          title: "Gateway 로그인 진입점 요청",
+          summary:
+            "로그인 버튼을 누르면 브라우저가 Gateway의 OAuth2 로그인 진입점으로 이동합니다.",
+          note:
+            "프런트엔드는 fetch 요청을 보내는 대신 window.location.assign()으로 브라우저 전체 페이지를 이동시킵니다.",
+          exchange: [
+            [
+              "METHOD",
+              "GET",
+              "브라우저가 Gateway의 로그인 진입점을 열기 위해 보내는 HTTP 요청 메서드입니다.",
+            ],
+            [
+              "REQUEST URL",
+              "http://localhost:8081/oauth2/authorization/keycloak",
+              "Spring Security OAuth2 Login을 시작하는 Gateway 주소입니다.",
+            ],
+            [
+              "REGISTRATION ID",
+              "keycloak",
+              "Gateway에 등록된 OAuth2 Client 설정 중 keycloak 설정을 선택하는 식별자입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "login-entry",
+              kicker: "FRONTEND · ENTRY POINT",
+              title: "로그인 버튼과 Gateway 진입 URL",
+              description: "프런트 코드와 Spring Security의 기본 로그인 진입 규칙을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-browser-auth-redirect",
+          number: "02",
+          from: "gateway",
+          to: "browser",
+          label: "Keycloak URL 전달",
+          protocol: "302 LOCATION",
+          title: "Keycloak 이동 URL 반환",
+          summary:
+            "Gateway는 설정을 바탕으로 Keycloak Authorization URL을 만든 뒤 Location 헤더에 담아 브라우저로 반환합니다.",
+          note:
+            "Gateway가 Keycloak을 직접 호출하는 단계가 아닙니다. 브라우저에게 다음 이동 목적지를 알려주며, 필요한 경우 Gateway 세션 쿠키도 함께 설정합니다.",
+          exchange: [
+            [
+              "STATUS",
+              "HTTP/1.1 302 Found",
+              "브라우저가 다른 주소로 이동해야 한다는 것을 알리는 HTTP redirect 응답입니다.",
+            ],
+            [
+              "RESPONSE HEADER",
+              "Location",
+              "브라우저가 다음에 이동해야 할 Keycloak 주소를 담는 응답 헤더입니다.",
+            ],
+            [
+              "HEADER VALUE",
+              "https://bbd-keycloak.inwoohub.com/auth/realms/bbd/protocol/openid-connect/auth?response_type=code&client_id=gateway&scope=openid%20profile%20email&state=...&redirect_uri=http://localhost:8081/login/oauth2/code/keycloak&nonce=...",
+              "Gateway가 설정과 OIDC discovery 결과를 조합해 만든 Keycloak Authorization URL입니다.",
+            ],
+            [
+              "OPTIONAL HEADER",
+              "Set-Cookie: JSESSIONID=...",
+              "인증 요청 정보와 state 등을 Gateway 세션에 보관해야 할 때 함께 내려갈 수 있는 세션 쿠키입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "request-resolver",
+              kicker: "GATEWAY INTERNAL",
+              title: "registrationId 조회와 YAML 연결",
+              description: "Gateway가 registrationId=keycloak에 해당하는 설정을 찾는 근거입니다.",
+            },
+            {
+              detailId: "redirect-url",
+              kicker: "302 REDIRECT",
+              title: "Authorization URL 구성 요소",
+              description: "Location 헤더에 담기는 URL과 각 파라미터의 출처를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "browser-keycloak-auth",
+          number: "03",
+          from: "browser",
+          to: "keycloak",
+          label: "로그인 화면 요청",
+          protocol: "GET",
+          title: "Keycloak Authorization Endpoint 요청",
+          summary:
+            "브라우저는 302 응답에서 받은 Location URL을 따라 Keycloak 로그인 화면으로 이동합니다.",
+          note:
+            "이 단계부터 ID/PW 검증까지는 Keycloak이 처리하는 표준 로그인 구간입니다. Gateway 관점에서는 앞 단계에서 전달한 redirect_uri와 state 유지가 핵심입니다.",
+          tone: "keycloak-standard",
+          exchange: [
+            [
+              "METHOD",
+              "GET",
+              "브라우저가 Keycloak 로그인 화면을 받기 위해 보내는 HTTP 요청 메서드입니다.",
+            ],
+            [
+              "DESTINATION",
+              "Keycloak Authorization Endpoint",
+              "OAuth2 / OIDC 로그인을 시작하는 Keycloak의 인가 엔드포인트입니다. 이 주소에서 사용자 로그인 화면이 제공됩니다.",
+            ],
+            [
+              "REQUEST URL",
+              "https://bbd-keycloak.inwoohub.com/auth/realms/bbd/protocol/openid-connect/auth?...",
+              "앞 단계에서 Gateway가 Location 헤더로 전달한 주소입니다. 브라우저는 이 URL을 그대로 따라 이동합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "keycloak-handoff",
+              kicker: "KEYCLOAK HANDOFF",
+              title: "Keycloak 표준 로그인 구간 진입",
+              description: "Gateway가 넘긴 redirect_uri와 state가 이후 callback에 어떻게 이어지는지 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "keycloak-browser-login-page",
+          number: "04",
+          from: "keycloak",
+          to: "browser",
+          label: "로그인 페이지 응답",
+          protocol: "HTML RESPONSE",
+          title: "Keycloak 로그인 페이지 응답",
+          summary:
+            "Keycloak은 사용자에게 ID와 PW를 입력할 수 있는 로그인 화면을 반환합니다.",
+          note:
+            "화면 렌더링과 로그인 폼 구성은 Keycloak이 담당합니다. Gateway에서 별도 화면을 만들거나 응답 내용을 조립하지 않습니다.",
+          tone: "keycloak-standard",
+          exchange: [
+            [
+              "RESPONSE",
+              "Keycloak Login Page",
+              "사용자에게 표시되는 Keycloak의 로그인 HTML 화면입니다.",
+            ],
+            [
+              "INPUT",
+              "ID / PW Login Form",
+              "사용자가 Keycloak에 제출할 인증 정보를 입력하는 폼입니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "browser-keycloak-credentials",
+          number: "05",
+          from: "browser",
+          to: "keycloak",
+          label: "ID / PW 제출",
+          protocol: "POST",
+          title: "사용자 로그인 정보 제출",
+          summary:
+            "사용자가 입력한 ID와 PW는 브라우저에서 Keycloak으로 제출되며 Keycloak이 직접 검증합니다.",
+          note:
+            "ID와 PW는 Gateway를 거치지 않습니다. 발표 자료에는 실제 값이 아니라 전달 방향과 Keycloak 검증 역할만 표시합니다.",
+          tone: "keycloak-standard",
+          exchange: [
+            [
+              "METHOD",
+              "POST",
+              "Keycloak 로그인 폼을 제출하는 HTTP 요청입니다.",
+            ],
+            [
+              "FORM DATA",
+              "ID / PW",
+              "사용자가 입력한 인증 정보입니다. 실제 값은 화면에 노출하지 않습니다.",
+            ],
+            [
+              "DESTINATION",
+              "Keycloak Login Process",
+              "Keycloak이 사용자 인증 정보를 검증하는 처리 구간입니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "keycloak-browser-callback-redirect",
+          number: "06",
+          from: "keycloak",
+          to: "browser",
+          label: "Gateway Callback URL 전달",
+          protocol: "302 LOCATION",
+          title: "Gateway Callback URL 반환",
+          summary:
+            "로그인이 성공하면 Keycloak은 Authorization Code와 기존 state를 Gateway callback URL에 붙여 브라우저로 반환합니다.",
+          note:
+            "초기 요청에서 받은 redirect_uri와 state를 기반으로 Keycloak이 자동 처리하는 구간입니다.",
+          tone: "keycloak-standard",
+          exchange: [
+            [
+              "STATUS",
+              "HTTP/1.1 302 Found",
+              "브라우저가 Gateway callback URL로 다시 이동해야 한다는 redirect 응답입니다.",
+            ],
+            [
+              "RESPONSE HEADER",
+              "Location: http://localhost:8081/login/oauth2/code/keycloak?code=...&amp;state=...",
+              "Keycloak이 code와 원래 state를 붙여 만든 Gateway callback 주소입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "keycloak-callback",
+              kicker: "KEYCLOAK STANDARD",
+              title: "Callback URL 생성과 state 유지",
+              description: "Keycloak이 Gateway callback URL을 조합해 브라우저로 돌려보내는 과정을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "browser-gateway-callback",
+          number: "07",
+          from: "browser",
+          to: "gateway",
+          label: "Gateway Callback 요청",
+          protocol: "GET",
+          title: "Gateway OAuth2 Callback 요청",
+          summary:
+            "브라우저는 Keycloak이 전달한 Location URL을 따라 Gateway callback으로 이동합니다.",
+          note:
+            "이때 JSESSIONID는 Keycloak 쿠키가 아니라 Gateway 쿠키입니다. Gateway는 이를 사용해 최초 인증 요청의 state, nonce, code_verifier 등을 조회합니다.",
+          exchange: [
+            [
+              "REQUEST URL",
+              "/login/oauth2/code/keycloak?code=...&amp;state=...",
+              "Spring Security OAuth2 Login이 처리하는 Gateway callback 주소입니다.",
+            ],
+            [
+              "COOKIE",
+              "JSESSIONID=...",
+              "초기 인증 요청 정보를 다시 찾는 데 사용하는 Gateway 세션 쿠키입니다.",
+            ],
+            [
+              "FILTER",
+              "OAuth2LoginAuthenticationFilter",
+              "callback 요청을 받아 code와 state 검증, 이후 인증 처리를 시작하는 Spring Security 필터입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "gateway-callback-filter",
+              kicker: "GATEWAY CALLBACK",
+              title: "Callback Filter와 JSESSIONID 역할",
+              description: "Gateway가 callback 요청을 이어받는 필터와 세션 조회 항목을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-keycloak-token",
+          number: "08",
+          from: "gateway",
+          to: "keycloak",
+          label: "Authorization Code 교환",
+          protocol: "POST",
+          title: "Keycloak Token Endpoint 요청",
+          summary:
+            "Gateway는 callback에서 받은 Authorization Code를 Keycloak Token Endpoint로 보내 토큰으로 교환합니다.",
+          note:
+            "이 요청은 브라우저를 거치지 않는 Gateway와 Keycloak 사이의 서버 간 통신입니다.",
+          exchange: [
+            [
+              "METHOD",
+              "POST",
+              "Authorization Code를 토큰으로 교환하기 위한 서버 간 HTTP 요청입니다.",
+            ],
+            [
+              "REQUEST URL",
+              "https://bbd-keycloak.inwoohub.com/auth/realms/bbd/protocol/openid-connect/token",
+              "Keycloak의 Token Endpoint입니다.",
+            ],
+            [
+              "FORM DATA",
+              "code, redirect_uri, client_id, client_secret",
+              "Authorization Code Grant 교환에 필요한 값입니다.",
+            ],
+            [
+              "OPTIONAL",
+              "code_verifier",
+              "PKCE가 실제 적용된 경우 함께 전송합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "token-exchange",
+              kicker: "SERVER TO SERVER",
+              title: "Gateway의 Token Endpoint 요청",
+              description: "code 교환 요청 값과 PKCE 조건부 처리 내용을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "keycloak-gateway-tokens",
+          number: "09",
+          from: "keycloak",
+          to: "gateway",
+          label: "토큰 응답",
+          protocol: "JSON",
+          title: "OIDC 토큰 응답 수신",
+          summary:
+            "Keycloak은 Gateway에 access_token, refresh_token, id_token을 반환합니다.",
+          note:
+            "openid scope가 포함되어 있으므로 Gateway는 id_token을 바탕으로 OIDC 사용자 인증 처리를 이어갑니다.",
+          exchange: [
+            [
+              "RESPONSE",
+              "access_token",
+              "보호 리소스 접근 시 사용할 수 있는 액세스 토큰입니다.",
+            ],
+            [
+              "RESPONSE",
+              "refresh_token",
+              "액세스 토큰 갱신에 사용할 수 있는 리프레시 토큰입니다.",
+            ],
+            [
+              "RESPONSE",
+              "id_token",
+              "로그인한 사용자의 OIDC 인증 정보를 담은 ID 토큰입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "token-exchange",
+              kicker: "OIDC TOKEN RESPONSE",
+              title: "Token Endpoint 요청과 응답",
+              description: "Gateway와 Keycloak 사이의 code 교환 및 토큰 응답을 함께 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-internal-authentication",
+          number: "10",
+          from: "gateway",
+          to: "gateway",
+          label: "인증 객체와 세션 저장",
+          protocol: "INTERNAL",
+          title: "Gateway 내부 인증 처리",
+          summary:
+            "Gateway는 토큰을 검증하고 OidcUser와 Authentication을 만든 뒤 SecurityContext와 OAuth2AuthorizedClient를 저장합니다.",
+          note:
+            "이 단계는 외부 네트워크 요청이 아니라 Spring Security 내부 처리입니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "VERIFY",
+              "id_token, nonce",
+              "OIDC 로그인 응답이 최초 인증 요청과 일치하는지 검증합니다.",
+            ],
+            [
+              "CREATE",
+              "OidcUser, Authentication",
+              "로그인 사용자를 나타내는 Principal과 인증 객체를 만듭니다.",
+            ],
+            [
+              "SAVE",
+              "SecurityContext, OAuth2AuthorizedClient",
+              "로그인 상태와 토큰 정보를 이후 요청에서 사용할 수 있도록 저장합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "gateway-session",
+              kicker: "GATEWAY INTERNAL",
+              title: "OidcUser, Authentication, Session 저장",
+              description: "Spring Security 내부 인증 처리와 세션 저장 결과를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-redis-session-save",
+          number: "11",
+          from: "gateway",
+          to: "redis",
+          label: "Redis에 로그인 세션 저장 · 도입 예정",
+          protocol: "SWITCH TBD",
+          title: "Redis-backed HttpSession 전환 예정",
+          summary:
+            "YAML에 Redis 접속 정보는 있습니다. 다만 제공된 코드만으로는 Spring Session 기반 세션 저장소 전환 여부를 확인할 수 없습니다.",
+          note:
+            "브라우저에는 여전히 JSESSIONID만 전달합니다. Spring Session을 적용하면 Gateway 인스턴스가 여러 대여도 같은 로그인 상태를 공유할 수 있습니다.",
+          tone: "redis-planned",
+          selectedLabel: "SWITCH TBD",
+          exchange: [
+            [
+              "CONFIG FOUND",
+              "spring.data.redis.host / port",
+              "Redis 연결 대상은 localhost:6379로 설정되어 있습니다.",
+            ],
+            [
+              "NOT CONFIRMED",
+              "Spring Session Redis 활성화 여부",
+              "의존성과 SessionRepository 활성화 설정은 제공된 코드에서 확인되지 않습니다.",
+            ],
+            [
+              "AFTER ADOPTION",
+              "Gateway → Redis-backed HttpSession",
+              "Spring Session이 SecurityContext와 세션 속성을 Redis에 저장합니다.",
+            ],
+            [
+              "BROWSER COOKIE",
+              "Set-Cookie: JSESSIONID=...",
+              "프런트와 브라우저의 쿠키 사용 방식은 그대로 유지됩니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "login-redis-session-plan",
+              kicker: "REDIS · SESSION SWITCH TBD",
+              title: "Redis 접속 설정과 세션 저장소 전환 구분",
+              description: "현재 확인된 설정과 추가로 확인할 Spring Session 적용 지점을 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "redis-gateway-session-save-complete",
+          number: "12",
+          from: "redis",
+          to: "gateway",
+          label: "세션 저장 완료 후 성공 처리 · 전환 후",
+          protocol: "PLANNED",
+          title: "Redis 세션 저장 이후 Gateway 처리 복귀",
+          summary:
+            "Spring Session Redis 전환 후에는 세션 저장이 끝나면 Gateway가 로그인 성공 처리를 이어갑니다.",
+          note:
+            "Spring Session Redis 전환 전이라면 Redis 왕복 없이 Gateway 로컬 HttpSession 저장 직후 successHandler가 실행됩니다.",
+          tone: "redis-planned",
+          selectedLabel: "AFTER ADOPTION",
+          exchange: [
+            [
+              "CURRENT STATUS",
+              "로컬 HttpSession 저장 후 successHandler 실행",
+              "지금은 Gateway 서버 안에서 바로 다음 단계로 이동합니다.",
+            ],
+            [
+              "AFTER ADOPTION",
+              "Redis 저장 완료 → Gateway successHandler",
+              "공유 세션 저장이 끝난 뒤 기존 로그인 성공 redirect 처리를 이어갑니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "gateway-browser-success",
+          number: "13",
+          from: "gateway",
+          to: "browser",
+          label: "로그인 성공 URL 이동",
+          protocol: "302 LOCATION",
+          title: "로그인 성공 후 브라우저 이동",
+          summary:
+            "Gateway는 인증 처리가 끝난 뒤 브라우저를 원래 요청 URL 또는 설정한 성공 URL로 이동시킵니다.",
+          note:
+            "현재 전달받은 SecurityConfig의 successHandler 기준으로는 프런트의 /auth/callback 화면으로 이동합니다.",
+          exchange: [
+            [
+              "STATUS",
+              "HTTP/1.1 302 Found",
+              "로그인 성공 이후 브라우저가 프런트 화면으로 이동하도록 하는 redirect 응답입니다.",
+            ],
+            [
+              "RESPONSE HEADER",
+              "Location: http://localhost:5173/auth/callback",
+              "현재 successHandler에서 지정한 프런트 로그인 완료 화면입니다.",
+            ],
+            [
+              "OPTIONAL HEADER",
+              "Set-Cookie: JSESSIONID=...",
+              "세션이 생성되거나 변경된 경우 Gateway 세션 쿠키가 함께 내려갈 수 있습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "login-success-redirect",
+              kicker: "LOGIN SUCCESS",
+              title: "세션 저장 이후 프런트 복귀",
+              description: "successHandler가 브라우저를 어디로 이동시키는지 확인합니다.",
+            },
+          ],
+        },
+      ];
+
+      const meActorSequence = [
+        { id: "frontend", meta: "APP ENTRY" },
+        { id: "gateway", meta: "AUTH ME ENDPOINT" },
+        { id: "gateway", meta: "TOMCAT · HTTP SESSION" },
+        { id: "redis", meta: "SPRING SESSION · SWITCH TBD" },
+        { id: "gateway", meta: "SESSION LOOKUP RESULT" },
+        { id: "gateway", meta: "SECURITY CONTEXT" },
+        { id: "gateway", meta: "AUTH CONTROLLER" },
+        { id: "gateway", meta: "AUTH DECISION" },
+        { id: "gateway", meta: "OIDC CLAIMS" },
+        { id: "frontend", meta: "JSON RESPONSE" },
+        { id: "frontend", meta: "SESSION NORMALIZE" },
+        { id: "frontend", meta: "ROUTE GUARD" },
+      ];
+
+      const meRouteStages = [
+        {
+          id: "frontend-gateway-auth-me",
+          number: "01",
+          from: "frontend",
+          to: "gateway",
+          label: "/api/auth/me 세션 확인",
+          protocol: "GET",
+          title: "Frontend의 로그인 상태 확인 요청",
+          summary:
+            "React 앱은 사이트 진입 시 Gateway의 /api/auth/me를 호출해 현재 브라우저의 로그인 상태를 확인합니다.",
+          note:
+            "HttpOnly 쿠키는 JavaScript가 직접 읽지 않습니다. credentials: include를 지정하면 브라우저가 저장된 Gateway 쿠키를 요청에 자동으로 붙입니다.",
+          exchange: [
+            [
+              "METHOD",
+              "GET",
+              "로그인 상태를 조회하기 위한 읽기 전용 HTTP 요청입니다.",
+            ],
+            [
+              "REQUEST URL",
+              "http://localhost:8081/api/auth/me",
+              "Gateway가 현재 세션의 로그인 여부를 JSON으로 반환하는 엔드포인트입니다.",
+            ],
+            [
+              "FETCH OPTION",
+              'credentials: "include"',
+              "프런트와 Gateway의 origin이 다를 때도 브라우저가 세션 쿠키를 포함하도록 지정합니다.",
+            ],
+            [
+              "COOKIE",
+              "Cookie: JSESSIONID=...",
+              "로그인 후 브라우저가 보관하고 있으면 네트워크 요청에 자동으로 포함되는 Gateway 세션 쿠키입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-frontend-request",
+              kicker: "FRONTEND · CHECK SESSION",
+              title: "checkSession()과 credentials: include",
+              description: "React 앱이 사이트 진입 시 실제로 보내는 세션 확인 요청을 확인합니다.",
+            },
+            {
+              detailId: "me-http-only-cookie",
+              kicker: "BROWSER · COOKIE BOUNDARY",
+              title: "HttpOnly 쿠키를 직접 읽지 않는 이유",
+              description: "JSESSIONID를 JavaScript 대신 브라우저가 자동 전송하는 이유를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-session-lookup",
+          number: "02",
+          from: "gateway",
+          to: "gateway",
+          label: "JSESSIONID로 HttpSession 조회",
+          protocol: "INTERNAL",
+          title: "Gateway 세션 조회",
+          summary:
+            "Tomcat은 요청 쿠키에서 JSESSIONID를 추출하고 로컬 Session Manager에서 기존 HttpSession을 찾습니다.",
+          note:
+            "Spring Security 내부의 request.getSession(false)는 기존 세션이 없을 때 새 세션을 만들지 않고 null을 반환합니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "SESSION KEY",
+              "JSESSIONID=...",
+              "브라우저가 요청과 함께 보낸 Gateway 세션 식별자입니다.",
+            ],
+            [
+              "TOMCAT LOOKUP",
+              'request.getSession(false)',
+              "Servlet Container가 JSESSIONID에 대응하는 기존 HttpSession만 조회합니다.",
+            ],
+            [
+              "SESSION MANAGER",
+              "manager.findSession(requestedSessionId)",
+              "현재 로컬 방식에서는 Tomcat Session Manager가 서버 메모리의 세션을 찾습니다.",
+            ],
+            [
+              "NO KEYCLOAK CALL",
+              "Keycloak 재호출 없음",
+              "로그인 상태 확인을 위해 Keycloak 로그인 서버에 매번 다시 요청하지 않습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-session-lookup",
+              kicker: "GATEWAY · HTTP SESSION",
+              title: "JSESSIONID에서 HttpSession으로",
+              description: "브라우저 쿠키와 Gateway 서버 세션이 연결되는 구조를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-redis-session-store",
+          number: "03",
+          from: "gateway",
+          to: "redis",
+          label: "Redis 세션 저장소 전환 · 확인 필요",
+          protocol: "SWITCH TBD",
+          title: "Redis-backed HttpSession 전환 예정",
+          summary:
+            "YAML에 Redis 접속 정보는 있습니다. 다만 제공된 코드만으로는 Spring Session 기반 세션 저장소 전환 여부를 확인할 수 없습니다.",
+          note:
+            "Spring Session Redis가 활성화되면 브라우저는 계속 JSESSIONID만 보내고, HttpSession 조회 위치가 Tomcat 로컬 메모리에서 Redis로 바뀝니다.",
+          tone: "redis-planned",
+          selectedLabel: "SWITCH TBD",
+          exchange: [
+            [
+              "CONFIG FOUND",
+              "spring.data.redis.host / port",
+              "Redis 연결 대상은 localhost:6379로 설정되어 있습니다.",
+            ],
+            [
+              "NOT CONFIRMED",
+              "Spring Session Redis 활성화 여부",
+              "의존성과 SessionRepository 활성화 설정은 제공된 코드에서 확인되지 않습니다.",
+            ],
+            [
+              "AFTER ADOPTION",
+              "JSESSIONID → Gateway → Redis",
+              "Spring Session이 JSESSIONID에 해당하는 Redis-backed HttpSession을 조회합니다.",
+            ],
+            [
+              "WHY REDIS",
+              "Gateway A / Gateway B → Redis",
+              "Gateway 인스턴스가 여러 대여도 동일한 로그인 세션을 공유할 수 있습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-redis-session-plan",
+              kicker: "REDIS · SESSION SWITCH TBD",
+              title: "Redis 접속 설정과 세션 저장소 전환 구분",
+              description: "현재 확인된 설정과 추가로 확인할 Spring Session 적용 지점을 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "redis-gateway-session-lookup-result",
+          number: "04",
+          from: "redis",
+          to: "gateway",
+          label: "Redis 조회 결과 반환 · 전환 후",
+          protocol: "SWITCH TBD",
+          title: "Redis-backed HttpSession 조회 결과",
+          summary:
+            "Spring Session Redis 전환 후에는 JSESSIONID에 대응하는 세션 조회 결과가 Gateway로 반환됩니다.",
+          note:
+            "현재 로컬 방식에서는 이 Redis 왕복 없이 Tomcat Session Manager 조회 결과를 바로 사용합니다.",
+          tone: "redis-planned",
+          selectedLabel: "AFTER SWITCH",
+          exchange: [
+            [
+              "CURRENT PATH",
+              "Tomcat Session Manager → HttpSession",
+              "현재 로컬 메모리 방식에서는 Redis를 거치지 않습니다.",
+            ],
+            [
+              "AFTER SWITCH",
+              "Redis → Redis-backed HttpSession",
+              "Spring Session Redis가 활성화된 이후의 공유 세션 조회 경로입니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "gateway-authentication-check",
+          number: "05",
+          from: "gateway",
+          to: "gateway",
+          label: "SecurityContext와 Authentication 복원",
+          protocol: "INTERNAL",
+          title: "Spring Security의 인증 정보 복원",
+          summary:
+            "Spring Security는 조회된 HttpSession에서 SPRING_SECURITY_CONTEXT를 읽고 현재 요청의 Authentication을 복원합니다.",
+          note:
+            "JSESSIONID 쿠키나 HttpSession이 존재하는 것만으로 로그인 상태가 되지는 않습니다. 세션 안에 SecurityContext와 Authentication이 있어야 합니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "SESSION ATTRIBUTE",
+              "SPRING_SECURITY_CONTEXT",
+              "Spring Security가 세션에 저장한 SecurityContext attribute 이름입니다.",
+            ],
+            [
+              "RESTORE",
+              "HttpSession → SecurityContext → Authentication",
+              "현재 요청에서 사용할 사용자 principal과 권한 정보를 복원합니다.",
+            ],
+            [
+              "IMPLEMENTATION",
+              "HttpSessionSecurityContextRepository",
+              "세션에서 SecurityContext를 읽는 Spring Security 구현체입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-authentication-check",
+              kicker: "SPRING SECURITY",
+              title: "로그인 상태가 성립하는 5가지 조건",
+              description: "쿠키 존재 여부와 실제 인증 상태가 다른 이유를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-auth-controller-injection",
+          number: "06",
+          from: "gateway",
+          to: "gateway",
+          label: "AuthController에 Authentication 주입",
+          protocol: "INTERNAL",
+          title: "AuthController.me(Authentication) 호출",
+          summary:
+            "Spring MVC는 현재 요청의 Authentication을 AuthController.me() 메서드 파라미터에 주입합니다.",
+          note:
+            "컨트롤러가 세션이나 SecurityContext를 직접 조회하는 구조가 아닙니다. 앞선 필터 처리 결과를 Authentication 파라미터로 받습니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "ENDPOINT",
+              '@GetMapping("/api/auth/me")',
+              "현재 브라우저 사용자의 로그인 상태를 반환하는 Gateway 엔드포인트입니다.",
+            ],
+            [
+              "METHOD",
+              "me(Authentication authentication)",
+              "복원된 Authentication을 메서드 파라미터로 전달받습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-auth-controller-injection",
+              kicker: "GATEWAY · AUTH CONTROLLER",
+              title: "Authentication 파라미터 주입",
+              description: "세션 복원 결과가 AuthController에 전달되는 지점을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-auth-controller-decision",
+          number: "07",
+          from: "gateway",
+          to: "gateway",
+          label: "실제 로그인 사용자 판정",
+          protocol: "INTERNAL",
+          title: "AnonymousAuthenticationToken 포함 미인증 판정",
+          summary:
+            "AuthController는 Authentication이 null인지, 인증 완료 상태인지, 익명 토큰인지 순서대로 확인합니다.",
+          note:
+            "authentication != null만 검사하면 익명 사용자를 로그인 사용자로 잘못 판단할 수 있습니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "CHECK 01",
+              "authentication == null",
+              "현재 요청에 인증 정보가 전혀 없는 경우입니다.",
+            ],
+            [
+              "CHECK 02",
+              "!authentication.isAuthenticated()",
+              "Authentication은 있지만 인증 완료 상태가 아닌 경우입니다.",
+            ],
+            [
+              "CHECK 03",
+              "authentication instanceof AnonymousAuthenticationToken",
+              "Spring Security가 익명 요청을 나타내기 위해 넣은 토큰인지 확인합니다.",
+            ],
+            [
+              "FALSE RESPONSE",
+              '{ "authenticated": false }',
+              "세 조건 중 하나라도 맞으면 즉시 미인증 JSON을 반환합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-auth-controller-decision",
+              kicker: "GATEWAY · AUTH DECISION",
+              title: "익명 사용자까지 제외하는 조건문",
+              description: "AuthController의 실제 분기 조건과 반환 값을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-auth-controller-claims",
+          number: "08",
+          from: "gateway",
+          to: "gateway",
+          label: "인증 사용자 정보 추출",
+          protocol: "INTERNAL",
+          title: "Authentication과 OidcUser에서 응답 값 구성",
+          summary:
+            "실제 로그인 사용자라면 Authentication.getName()과 OidcUser claim을 사용해 name, username, sub를 구성합니다.",
+          note:
+            "YAML의 user-name-attribute가 preferred_username이므로 name에도 대표 사용자명 값이 사용됩니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "NAME",
+              "authentication.getName()",
+              "provider.keycloak.user-name-attribute: preferred_username 설정을 기준으로 대표 이름을 가져옵니다.",
+            ],
+            [
+              "USERNAME",
+              "oidcUser.getPreferredUsername()",
+              "Keycloak의 preferred_username claim을 username으로 반환합니다.",
+            ],
+            [
+              "SUB",
+              "oidcUser.getSubject()",
+              "OIDC 표준 고유 식별자인 sub를 반환합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-auth-controller-claims",
+              kicker: "GATEWAY · OIDC CLAIMS",
+              title: "preferred_username과 sub 추출",
+              description: "인증 사용자 응답에 들어가는 값과 YAML 설정의 연결을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "gateway-frontend-auth-me-response",
+          number: "09",
+          from: "gateway",
+          to: "frontend",
+          label: "로그인 상태 JSON 응답",
+          protocol: "JSON",
+          title: "/api/auth/me JSON 응답",
+          summary:
+            "AuthController는 판정 결과에 따라 authenticated=false 또는 사용자 정보를 포함한 authenticated=true JSON을 반환합니다.",
+          note:
+            "미인증 요청도 이 JSON을 받으려면 SecurityConfig에서 /api/auth/me 접근 허용 여부를 확인해야 합니다. 제공된 코드에는 해당 설정이 포함되어 있지 않습니다.",
+          exchange: [
+            [
+              "AUTHENTICATED",
+              '{ "authenticated": true, "name": "...", "username": "...", "sub": "..." }',
+              "실제 로그인 사용자이며 principal이 OidcUser일 때 반환되는 사용자 정보입니다.",
+            ],
+            [
+              "UNAUTHENTICATED",
+              '{ "authenticated": false }',
+              "인증 정보가 없거나 익명 토큰이면 반환되는 상태입니다.",
+            ],
+            [
+              "VERIFY CONFIG",
+              'requestMatchers("/api/auth/me").permitAll()',
+              "미인증 JSON 응답을 사용하려면 SecurityConfig에서 허용 여부를 확인해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-response-contract",
+              kicker: "GATEWAY · RESPONSE CONTRACT",
+              title: "authenticated true / false 응답 계약",
+              description: "AuthController의 JSON 반환 값과 확인할 SecurityConfig 항목을 봅니다.",
+            },
+          ],
+        },
+        {
+          id: "frontend-normalize-session",
+          number: "10",
+          from: "frontend",
+          to: "frontend",
+          label: "세션 응답 정규화",
+          protocol: "INTERNAL",
+          title: "Frontend의 checkSession() 결과 정리",
+          summary:
+            "Frontend는 응답 상태와 authenticated 필드를 확인하고 로그인 사용자 객체 또는 null로 정규화합니다.",
+          note:
+            "opaqueredirect, HTTP 오류, 네트워크 오류, authenticated !== true는 모두 로그인하지 않은 상태로 처리합니다.",
+          tone: "frontend-internal",
+          exchange: [
+            [
+              "SUCCESS",
+              "AuthenticatedUser",
+              "authenticated=true이면 name, username, sub를 포함한 로그인 사용자 객체를 만듭니다.",
+            ],
+            [
+              "FAILURE",
+              "null",
+              "세션이 유효하지 않거나 응답을 신뢰할 수 없으면 미인증 상태로 정리합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-frontend-normalize",
+              kicker: "FRONTEND · NORMALIZE",
+              title: "오류와 만료 세션을 null로 정리",
+              description: "프런트가 다양한 실패 조건을 하나의 미인증 상태로 다루는 방식을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "frontend-protected-route",
+          number: "11",
+          from: "frontend",
+          to: "frontend",
+          label: "보호 화면 렌더링 분기",
+          protocol: "ROUTE GUARD",
+          title: "ProtectedRoute 화면 분기",
+          summary:
+            "Frontend는 checkSession() 결과에 따라 로딩 화면, 로그인 화면 이동, 보호 화면 렌더링 중 하나를 선택합니다.",
+          note:
+            "로그인 상태가 확인되면 Outlet을 렌더링하고, 세션이 없으면 현재 경로를 returnTo로 보존해 /login으로 이동합니다.",
+          tone: "frontend-internal",
+          exchange: [
+            [
+              "CHECKING",
+              "<RedirectingScreen />",
+              "Gateway 응답을 기다리는 동안 잠시 표시하는 보안 로그인 연결 화면입니다.",
+            ],
+            [
+              "UNAUTHENTICATED",
+              '<Navigate to="/login?returnTo=..." />',
+              "세션이 없으면 원래 접근 경로를 보존한 채 로그인 화면으로 이동합니다.",
+            ],
+            [
+              "AUTHENTICATED",
+              "<Outlet context={user} />",
+              "세션이 확인되면 요청한 보호 화면과 사용자 컨텍스트를 렌더링합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "me-protected-route",
+              kicker: "FRONTEND · ROUTE GUARD",
+              title: "ProtectedRoute의 세 가지 상태",
+              description: "checking, unauthenticated, authenticated 화면 분기를 확인합니다.",
+            },
+          ],
+        },
+      ];
+
+      const apiActorSequence = [
+        { id: "frontend", meta: "BUSINESS REQUEST" },
+        { id: "gateway", meta: "SESSION AUTH" },
+        { id: "gateway", meta: "SECURITY CONTEXT" },
+        { id: "gateway", meta: "ROUTE PREDICATE" },
+        { id: "itemService", meta: "DOWNSTREAM REQUEST" },
+        { id: "itemService", meta: "DOMAIN PROCESS" },
+        { id: "gateway", meta: "DOWNSTREAM RESPONSE" },
+        { id: "frontend", meta: "BUSINESS JSON" },
+      ];
+
+      const apiRouteStages = [
+        {
+          id: "api-frontend-gateway-items",
+          number: "01",
+          from: "frontend",
+          to: "gateway",
+          label: "/api/items/** 업무 요청",
+          protocol: "HTTP",
+          title: "Frontend의 일반 서비스 API 요청",
+          summary:
+            "Frontend는 Gateway의 /api/items/** 경로로 업무 요청을 보내고, 브라우저는 로그인 후 보관 중인 JSESSIONID를 자동으로 포함합니다.",
+          note:
+            "GET, POST, PUT, DELETE 등 실제 메서드와 세부 경로는 item-service API 계약에 따라 달라집니다. 여기서는 Gateway 라우팅 경로를 기준으로 설명합니다.",
+          exchange: [
+            [
+              "REQUEST PATH",
+              "/api/items/**",
+              "현재 Gateway YAML의 item-service Path predicate와 일치하는 외부 진입 경로입니다.",
+            ],
+            [
+              "COOKIE",
+              "Cookie: JSESSIONID=...",
+              "브라우저가 자동으로 포함하는 Gateway 세션 식별자입니다.",
+            ],
+            [
+              "EXAMPLE",
+              "GET /api/items/P-1004",
+              "세부 URL은 예시이며 실제 item-service 컨트롤러 계약을 확인해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-items-request",
+              kicker: "FLOW 03 · FRONTEND REQUEST",
+              title: "일반 서비스 요청과 JSESSIONID",
+              description: "브라우저 쿠키와 Gateway 외부 진입 경로를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "api-gateway-session-auth",
+          number: "02",
+          from: "gateway",
+          to: "gateway",
+          label: "세션 기반 Authentication 복원",
+          protocol: "INTERNAL",
+          title: "Gateway의 로그인 세션 복원",
+          summary:
+            "Gateway는 JSESSIONID에 연결된 HttpSession에서 SecurityContext와 Authentication을 복원합니다.",
+          note:
+            "기본 원리는 Flow 02와 같습니다. 제공된 코드만으로는 /api/items/**의 구체적인 authorizeHttpRequests 규칙을 확인할 수 없습니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "LOOKUP",
+              "JSESSIONID → HttpSession",
+              "현재 로컬 방식에서는 Servlet Container가 기존 세션을 조회합니다.",
+            ],
+            [
+              "RESTORE",
+              "SPRING_SECURITY_CONTEXT → Authentication",
+              "Spring Security가 현재 요청의 인증 정보를 복원합니다.",
+            ],
+            [
+              "VERIFY CONFIG",
+              'requestMatchers("/api/items/**")...',
+              "인증 필수 여부와 권한 규칙은 SecurityConfig에서 확인해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-security-boundary",
+              kicker: "FLOW 03 · SECURITY BOUNDARY",
+              title: "세션 인증과 Bearer JWT 경로 구분",
+              description: "일반 서비스 요청에서 확인해야 할 SecurityConfig 항목을 봅니다.",
+            },
+          ],
+        },
+        {
+          id: "api-gateway-route-match",
+          number: "03",
+          from: "gateway",
+          to: "gateway",
+          label: "item-service 라우트 선택",
+          protocol: "ROUTE MATCH",
+          title: "Spring Cloud Gateway Path predicate 매칭",
+          summary:
+            "Gateway는 요청 경로가 /api/items/**에 해당하면 item-service 라우트를 선택합니다.",
+          note:
+            "이 단계는 제공된 YAML에서 직접 확인됩니다. 현재 설정에는 RewritePath 같은 추가 필터가 없으므로 경로 변환도 단정하지 않습니다.",
+          tone: "gateway-internal",
+          exchange: [
+            [
+              "ROUTE ID",
+              "item-service",
+              "Gateway에 등록된 일반 서비스 라우트 식별자입니다.",
+            ],
+            [
+              "PREDICATE",
+              "Path=/api/items/**",
+              "요청 경로를 기준으로 item-service 라우트를 선택합니다.",
+            ],
+            [
+              "TARGET URI",
+              "http://localhost:8082",
+              "현재 YAML에 지정된 downstream 서비스 주소입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-route-config",
+              kicker: "FLOW 03 · GATEWAY ROUTE",
+              title: "item-service YAML 라우팅 설정",
+              description: "제공된 Gateway 설정에서 확인되는 Path predicate와 대상 URI입니다.",
+            },
+          ],
+        },
+        {
+          id: "api-gateway-item-service",
+          number: "04",
+          from: "gateway",
+          to: "itemService",
+          label: "item-service로 요청 전달",
+          protocol: "HTTP",
+          title: "Gateway에서 item-service로 라우팅",
+          summary:
+            "매칭된 요청은 Gateway를 거쳐 http://localhost:8082의 item-service로 전달됩니다.",
+          note:
+            "Gateway가 access token이나 사용자 헤더를 downstream으로 전달하는지는 TokenRelay, 필터, 서비스 구현 코드가 있어야 확정할 수 있습니다.",
+          exchange: [
+            [
+              "DESTINATION",
+              "http://localhost:8082",
+              "현재 item-service 라우트의 downstream URI입니다.",
+            ],
+            [
+              "PATH",
+              "/api/items/**",
+              "별도 경로 변환 필터가 제공되지 않았으므로 외부 경로를 기준으로 표시합니다.",
+            ],
+            [
+              "VERIFY FILTERS",
+              "TokenRelay / AddRequestHeader / custom filter",
+              "인증 컨텍스트 전달 방식은 추가 Gateway 설정에서 확인해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-route-config",
+              kicker: "FLOW 03 · DOWNSTREAM",
+              title: "라우팅 대상과 확인할 필터",
+              description: "확정 가능한 대상 URI와 추가 확인이 필요한 인증 전달 방식을 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "api-item-service-process",
+          number: "05",
+          from: "itemService",
+          to: "itemService",
+          label: "item-service 업무 처리",
+          protocol: "DOMAIN",
+          title: "item-service의 도메인 로직 실행",
+          summary:
+            "item-service는 전달받은 요청을 처리하고 업무 JSON 또는 오류 응답을 만듭니다.",
+          note:
+            "item-service 컨트롤러, 인가 규칙, DB 조회 코드는 제공되지 않았습니다. 따라서 내부 구현은 확인 필요 항목으로 표시합니다.",
+          tone: "design-tbd",
+          selectedLabel: "SERVICE CODE TBD",
+          exchange: [
+            [
+              "KNOWN",
+              "item-service · localhost:8082",
+              "Gateway가 호출하는 서비스 주소까지는 확인됩니다.",
+            ],
+            [
+              "VERIFY SERVICE",
+              "Controller / Authorization / Repository",
+              "세부 엔드포인트, 도메인 인가, DB 조회 방식은 서비스 코드에서 확인해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-item-service-tbd",
+              kicker: "FLOW 03 · SERVICE CODE TBD",
+              title: "item-service에서 추가로 확인할 코드",
+              description: "현재 자료에서 확정할 수 없는 downstream 내부 범위를 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "api-item-service-gateway-response",
+          number: "06",
+          from: "itemService",
+          to: "gateway",
+          label: "업무 응답 반환",
+          protocol: "HTTP RESPONSE",
+          title: "item-service 응답이 Gateway로 복귀",
+          summary:
+            "item-service의 업무 JSON 또는 오류 상태가 Gateway로 돌아옵니다.",
+          note:
+            "Gateway httpclient 설정에는 connect-timeout 3000ms, response-timeout 5s가 있습니다.",
+          exchange: [
+            [
+              "SUCCESS",
+              "2xx + business JSON",
+              "업무 처리가 성공하면 item-service 응답을 Gateway가 받습니다.",
+            ],
+            [
+              "ERROR",
+              "4xx / 5xx",
+              "인가 실패나 downstream 오류도 Gateway를 거쳐 반환됩니다.",
+            ],
+            [
+              "TIMEOUT",
+              "connect 3000ms / response 5s",
+              "현재 Gateway YAML에 지정된 httpclient timeout 값입니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "api-gateway-frontend-response",
+          number: "07",
+          from: "gateway",
+          to: "frontend",
+          label: "Frontend에 최종 응답",
+          protocol: "HTTP RESPONSE",
+          title: "Gateway를 거쳐 업무 JSON 반환",
+          summary:
+            "Gateway는 item-service의 결과를 Frontend에 반환하고, Frontend는 화면 상태를 갱신합니다.",
+          note:
+            "첨부 자료의 원칙처럼 access token과 refresh token은 업무 응답 body에 포함하지 않습니다.",
+          exchange: [
+            [
+              "SUCCESS",
+              "HTTP 2xx + item JSON",
+              "Frontend가 화면에 사용할 업무 데이터를 받습니다.",
+            ],
+            [
+              "FAILURE",
+              "HTTP 401 / 403 / 5xx",
+              "Frontend는 인증 만료, 권한 부족, 서버 오류를 상태 코드에 맞춰 처리합니다.",
+            ],
+            [
+              "TOKEN EXPOSURE",
+              "access token / refresh token 미포함",
+              "업무 응답 body에는 인증 토큰을 노출하지 않습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "api-response-contract",
+              kicker: "FLOW 03 · RESPONSE",
+              title: "일반 서비스 API 응답 원칙",
+              description: "업무 JSON 반환과 토큰 비노출 원칙을 확인합니다.",
+            },
+          ],
+        },
+      ];
+
+      const dashboardActorSequence = [
+        { id: "frontend", meta: "DASHBOARD ENTRY" },
+        { id: "dashboardBff", meta: "SUMMARY API · TBD" },
+        { id: "gateway", meta: "AUTH ME REUSE" },
+        { id: "dashboardBff", meta: "USER CONTEXT" },
+        { id: "gateway", meta: "WIDGET FAN-OUT" },
+        { id: "domainServices", meta: "DOMAIN RESULTS" },
+        { id: "gateway", meta: "RESULTS" },
+        { id: "dashboardBff", meta: "COMPOSE JSON" },
+        { id: "frontend", meta: "WIDGET RENDER" },
+      ];
+
+      const dashboardRouteStages = [
+        {
+          id: "dashboard-frontend-bff-summary",
+          number: "01",
+          from: "frontend",
+          to: "dashboardBff",
+          label: "대시보드 요약 API 요청",
+          protocol: "DESIGN TBD",
+          title: "Frontend에서 Dashboard BFF 호출",
+          summary:
+            "Frontend는 대시보드 화면에 필요한 데이터를 Dashboard BFF의 요약 API로 한 번에 요청합니다.",
+          note:
+            "Dashboard BFF의 실제 배포 주소와 엔드포인트는 제공된 Gateway YAML에 없습니다. /api/dashboard/summary는 설명을 위한 후보 경로입니다.",
+          tone: "design-tbd",
+          selectedLabel: "DESIGN TBD",
+          exchange: [
+            [
+              "CANDIDATE PATH",
+              "GET /api/dashboard/summary",
+              "화면 전용 조합 API의 예시 경로이며 실제 계약 확정이 필요합니다.",
+            ],
+            [
+              "COOKIE",
+              "Cookie: JSESSIONID=...",
+              "BFF가 같은 쿠키 범위에 있다면 브라우저가 세션 쿠키를 자동 전송할 수 있습니다.",
+            ],
+            [
+              "QUERY EXAMPLE",
+              "branchId, range, widget set",
+              "지점, 조회 기간, 위젯 조건은 대시보드 요구사항에 맞춰 확정해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-bff-design",
+              kicker: "FLOW 04 · DASHBOARD BFF · DESIGN TBD",
+              title: "Dashboard BFF를 두는 이유와 확인할 계약",
+              description: "첨부 자료의 BFF 구조와 현재 코드에서 추가로 정할 항목을 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "dashboard-bff-gateway-auth-me",
+          number: "02",
+          from: "dashboardBff",
+          to: "gateway",
+          label: "/api/auth/me로 사용자 확인 · 후보",
+          protocol: "DESIGN TBD",
+          title: "Dashboard BFF의 사용자 컨텍스트 확인",
+          summary:
+            "Dashboard BFF는 쿠키를 직접 해석하지 않고 Gateway에 사용자 세션 확인을 맡기는 구조로 설계할 수 있습니다.",
+          note:
+            "현재 Gateway에 /api/auth/me가 있으므로 재사용 후보로 표시합니다. BFF가 쿠키를 전달하는 방식과 별도 내부 API 필요 여부는 확정해야 합니다.",
+          tone: "design-tbd",
+          selectedLabel: "REUSE CANDIDATE",
+          exchange: [
+            [
+              "CANDIDATE",
+              "GET /api/auth/me",
+              "현재 Gateway AuthController에 이미 존재하는 사용자 상태 조회 API입니다.",
+            ],
+            [
+              "FORWARD",
+              "Cookie: JSESSIONID=...",
+              "BFF가 Gateway에 세션 쿠키를 전달하는 방식은 배포 구조에 맞춰 결정해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-auth-context",
+              kicker: "FLOW 04 · AUTH CONTEXT · DESIGN TBD",
+              title: "/api/auth/me 재사용 후보",
+              description: "BFF가 세션을 직접 해석하지 않는 설계와 확정할 항목을 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "dashboard-gateway-bff-auth-context",
+          number: "03",
+          from: "gateway",
+          to: "dashboardBff",
+          label: "사용자 컨텍스트 반환 · 후보",
+          protocol: "JSON",
+          title: "Gateway의 인증 사용자 JSON 반환",
+          summary:
+            "Gateway는 /api/auth/me를 재사용한다면 authenticated, name, username, sub를 Dashboard BFF에 반환합니다.",
+          note:
+            "roles, branchId, tenantId가 대시보드 조합에 필요하다면 AuthController 응답 확장이나 별도 내부 사용자 컨텍스트 API가 필요합니다.",
+          tone: "design-tbd",
+          selectedLabel: "CONTRACT TBD",
+          exchange: [
+            [
+              "CURRENT RESPONSE",
+              "authenticated, name, username, sub",
+              "현재 제공된 AuthController에서 확인되는 응답 필드입니다.",
+            ],
+            [
+              "DASHBOARD NEEDS",
+              "roles, branchId, tenantId · TBD",
+              "첨부 예시에서 사용하지만 현재 AuthController에는 없는 필드입니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-auth-context",
+              kicker: "FLOW 04 · USER CONTEXT",
+              title: "현재 응답과 대시보드 추가 필드",
+              description: "이미 있는 필드와 대시보드 요구사항에 따라 확장할 필드를 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "dashboard-bff-gateway-fanout",
+          number: "04",
+          from: "dashboardBff",
+          to: "gateway",
+          label: "위젯 API 병렬 요청",
+          protocol: "DESIGN TBD",
+          title: "Dashboard BFF의 위젯 API 팬아웃",
+          summary:
+            "Dashboard BFF는 화면 위젯별로 필요한 도메인 API를 Gateway에 병렬 호출합니다.",
+          note:
+            "현재 YAML에서 확인되는 라우트는 /api/items/** 하나입니다. 매출, 발주 등 추가 위젯 API 라우트는 아직 제공되지 않았습니다.",
+          tone: "design-tbd",
+          selectedLabel: "ROUTES TBD",
+          exchange: [
+            [
+              "CONFIRMED ROUTE",
+              "/api/items/** → item-service",
+              "현재 YAML에서 확인되는 item-service 라우트입니다.",
+            ],
+            [
+              "EXAMPLE WIDGETS",
+              "low stock / sales / procurement",
+              "첨부 자료의 위젯 예시이며 실제 API와 Gateway 라우트 추가가 필요합니다.",
+            ],
+            [
+              "CALL PATTERN",
+              "parallel requests + per-widget timeout",
+              "부분 실패가 전체 대시보드 실패로 번지지 않도록 위젯별 정책을 둡니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-fanout-design",
+              kicker: "FLOW 04 · FAN-OUT · DESIGN TBD",
+              title: "확인된 item 라우트와 추가할 위젯 API",
+              description: "현재 Gateway 설정과 향후 대시보드 라우트를 구분합니다.",
+            },
+          ],
+        },
+        {
+          id: "dashboard-gateway-domain-services",
+          number: "05",
+          from: "gateway",
+          to: "domainServices",
+          label: "도메인 서비스별 라우팅",
+          protocol: "DESIGN TBD",
+          title: "Gateway가 위젯 요청을 도메인 서비스로 전달",
+          summary:
+            "Gateway는 각 위젯 요청을 담당 도메인 서비스로 라우팅합니다.",
+          note:
+            "item-service는 localhost:8082로 확인됩니다. 다른 도메인 서비스의 URI, Path predicate, 인가 정책은 추가 설정이 필요합니다.",
+          tone: "design-tbd",
+          selectedLabel: "PARTIAL CONFIG",
+          exchange: [
+            [
+              "CONFIRMED",
+              "item-service → http://localhost:8082",
+              "현재 Gateway YAML에서 직접 확인되는 downstream 서비스입니다.",
+            ],
+            [
+              "ADD ROUTES",
+              "sales / procurement / other widgets",
+              "대시보드 위젯 구성이 확정되면 Gateway 라우트도 함께 추가해야 합니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-fanout-design",
+              kicker: "FLOW 04 · DOMAIN ROUTES",
+              title: "도메인 서비스 라우트 확장",
+              description: "확정된 item-service와 아직 추가할 서비스 라우트를 확인합니다.",
+            },
+          ],
+        },
+        {
+          id: "dashboard-domain-services-gateway",
+          number: "06",
+          from: "domainServices",
+          to: "gateway",
+          label: "위젯별 결과 반환",
+          protocol: "JSON",
+          title: "도메인 서비스 응답 수집",
+          summary:
+            "각 도메인 서비스는 위젯에 필요한 업무 JSON 또는 오류 상태를 Gateway로 반환합니다.",
+          note:
+            "Gateway response-timeout은 현재 5초입니다. Dashboard BFF에서는 위젯별 timeout과 부분 실패 정책도 별도로 정하는 편이 좋습니다.",
+          tone: "design-tbd",
+          selectedLabel: "POLICY TBD",
+          exchange: [
+            [
+              "SUCCESS",
+              "widget business JSON",
+              "각 서비스가 위젯에 필요한 업무 데이터를 반환합니다.",
+            ],
+            [
+              "FAILURE",
+              "timeout / 4xx / 5xx",
+              "위젯별 실패를 전체 화면 실패로 처리할지 부분 실패로 처리할지 정해야 합니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "dashboard-gateway-bff-results",
+          number: "07",
+          from: "gateway",
+          to: "dashboardBff",
+          label: "각 호출 결과 복귀",
+          protocol: "JSON",
+          title: "Gateway 결과가 Dashboard BFF로 복귀",
+          summary:
+            "Dashboard BFF는 Gateway를 통해 각 위젯 호출의 성공, 실패, timeout 결과를 받습니다.",
+          note:
+            "BFF는 화면 렌더링에 필요한 결과만 남기고 내부 서비스 응답을 화면 DTO로 변환합니다.",
+          tone: "design-tbd",
+          selectedLabel: "COMPOSE NEXT",
+          exchange: [
+            [
+              "RESULT SET",
+              "items + additional widget results",
+              "확정된 item-service 결과와 향후 추가할 위젯 결과를 모읍니다.",
+            ],
+            [
+              "STATUS",
+              "per-widget success / failure",
+              "부분 실패 표시를 위해 위젯별 상태를 유지합니다.",
+            ],
+          ],
+          evidence: [],
+        },
+        {
+          id: "dashboard-bff-frontend-summary",
+          number: "08",
+          from: "dashboardBff",
+          to: "frontend",
+          label: "화면 전용 JSON 반환",
+          protocol: "JSON",
+          title: "Dashboard BFF가 요약 JSON 조합",
+          summary:
+            "Dashboard BFF는 여러 도메인 응답을 화면이 바로 렌더링할 수 있는 요약 JSON으로 조합해 Frontend에 반환합니다.",
+          note:
+            "내부 헤더와 토큰은 제거하고, partial 상태와 위젯별 lastUpdated 같은 화면용 메타데이터를 포함할 수 있습니다.",
+          tone: "design-tbd",
+          selectedLabel: "DESIGN TBD",
+          exchange: [
+            [
+              "BODY",
+              "widgets, partial, lastUpdated",
+              "대시보드 화면 전용 응답 DTO 후보입니다.",
+            ],
+            [
+              "REMOVE",
+              "token / internal headers",
+              "브라우저 응답에는 access token, refresh token, 내부 호출 헤더를 노출하지 않습니다.",
+            ],
+            [
+              "CACHE",
+              "short TTL per widget · TBD",
+              "변경 주기가 느린 위젯은 짧은 TTL 캐시 적용을 검토할 수 있습니다.",
+            ],
+          ],
+          evidence: [
+            {
+              detailId: "dashboard-summary-contract",
+              kicker: "FLOW 04 · SUMMARY JSON · DESIGN TBD",
+              title: "화면 전용 JSON 조합 예시",
+              description: "BFF가 브라우저에 반환할 대시보드 DTO 후보를 확인합니다.",
+            },
+          ],
+        },
+      ];
+
+      const simpleFlowSequences = {
+        login: [
+          {
+            id: "browser",
+            meta: "LOGIN START",
+            route: {
+              stageId: "browser-gateway-entry",
+              stageIds: ["browser-gateway-entry"],
+              number: "01",
+              protocol: "GET",
+              label: "Gateway 로그인 시작 요청",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "OAUTH2 LOGIN",
+            route: {
+              stageId: "gateway-browser-auth-redirect",
+              stageIds: [
+                "gateway-browser-auth-redirect",
+                "browser-keycloak-auth",
+                "keycloak-browser-login-page",
+              ],
+              number: "02",
+              protocol: "302 LOCATION",
+              label: "Keycloak 로그인 화면으로 이동",
+            },
+          },
+          {
+            id: "keycloak",
+            meta: "LOGIN PROCESS",
+            route: {
+              stageId: "browser-keycloak-credentials",
+              stageIds: [
+                "browser-keycloak-credentials",
+                "keycloak-browser-callback-redirect",
+                "browser-gateway-callback",
+                "gateway-keycloak-token",
+                "keycloak-gateway-tokens",
+              ],
+              number: "03",
+              protocol: "OIDC",
+              label: "ID / PW 검증 후 Authorization Code 전달",
+              tone: "keycloak-standard",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "SESSION BUILD",
+            route: {
+              stageId: "gateway-redis-session-save",
+              stageIds: [
+                "gateway-internal-authentication",
+                "gateway-redis-session-save",
+              ],
+              number: "04",
+              protocol: "SWITCH TBD",
+              label: "로그인 세션 저장 · Redis 전환 예정",
+              tone: "redis-planned",
+            },
+          },
+          {
+            id: "redis",
+            meta: "SESSION STORE · 아직 미도입",
+            route: {
+              stageId: "redis-gateway-session-save-complete",
+              stageIds: ["redis-gateway-session-save-complete"],
+              number: "05",
+              protocol: "PLANNED",
+              label: "도입 후 Gateway 인스턴스 간 세션 공유",
+              tone: "redis-planned",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "LOGIN SUCCESS",
+            route: {
+              stageId: "gateway-browser-success",
+              stageIds: ["gateway-browser-success"],
+              number: "06",
+              protocol: "302 LOCATION",
+              label: "프론트 로그인 완료 화면으로 이동",
+            },
+          },
+          { id: "browser", meta: "AUTHENTICATED" },
+        ],
+        me: [
+          {
+            id: "frontend",
+            meta: "APP ENTRY",
+            route: {
+              stageId: "frontend-gateway-auth-me",
+              stageIds: ["frontend-gateway-auth-me"],
+              number: "01",
+              protocol: "GET",
+              label: "/api/auth/me 요청 · JSESSIONID 포함",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "SESSION LOOKUP",
+            route: {
+              stageId: "gateway-redis-session-store",
+              stageIds: ["gateway-session-lookup", "gateway-redis-session-store"],
+              number: "02",
+              protocol: "SWITCH TBD",
+              label: "현재 로컬 세션 조회 · Redis 전환 예정",
+              tone: "redis-planned",
+            },
+          },
+          {
+            id: "redis",
+            meta: "SESSION STORE · 아직 미도입",
+            route: {
+              stageId: "gateway-authentication-check",
+              stageIds: [
+                "redis-gateway-session-lookup-result",
+                "gateway-authentication-check",
+              ],
+              number: "03",
+              protocol: "INTERNAL",
+              label: "SecurityContext / Authentication 복원",
+              tone: "gateway-internal",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "AUTH CONTROLLER",
+            route: {
+              stageId: "gateway-frontend-auth-me-response",
+              stageIds: [
+                "gateway-auth-controller-injection",
+                "gateway-auth-controller-decision",
+                "gateway-auth-controller-claims",
+                "gateway-frontend-auth-me-response",
+                "frontend-normalize-session",
+                "frontend-protected-route",
+              ],
+              number: "04",
+              protocol: "JSON",
+              label: "로그인 상태 반환 후 화면 분기",
+            },
+          },
+          { id: "frontend", meta: "ROUTE GUARD" },
+        ],
+        api: [
+          {
+            id: "frontend",
+            meta: "BUSINESS REQUEST",
+            route: {
+              stageId: "api-frontend-gateway-items",
+              stageIds: ["api-frontend-gateway-items"],
+              number: "01",
+              protocol: "HTTP",
+              label: "/api/items/** 업무 요청",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "SESSION AUTH",
+            route: {
+              stageId: "api-gateway-session-auth",
+              stageIds: ["api-gateway-session-auth"],
+              number: "02",
+              protocol: "SWITCH TBD",
+              label: "현재 로컬 세션 인증 · Redis 전환 예정",
+              tone: "redis-planned",
+            },
+          },
+          {
+            id: "redis",
+            meta: "SESSION STORE · 아직 미도입",
+            route: {
+              stageId: "api-gateway-route-match",
+              stageIds: ["api-gateway-route-match"],
+              number: "03",
+              protocol: "INTERNAL",
+              label: "인증 완료 후 Gateway 라우트 매칭",
+              tone: "gateway-internal",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "ROUTE PREDICATE",
+            route: {
+              stageId: "api-gateway-item-service",
+              stageIds: ["api-gateway-item-service", "api-item-service-process"],
+              number: "04",
+              protocol: "FORWARD",
+              label: "/api/items/** → item-service",
+            },
+          },
+          {
+            id: "itemService",
+            meta: "DOMAIN PROCESS",
+            route: {
+              stageId: "api-gateway-frontend-response",
+              stageIds: [
+                "api-item-service-gateway-response",
+                "api-gateway-frontend-response",
+              ],
+              number: "05",
+              protocol: "JSON",
+              label: "업무 처리 결과를 Frontend에 반환",
+            },
+          },
+          { id: "frontend", meta: "BUSINESS JSON" },
+        ],
+        dashboard: [
+          {
+            id: "frontend",
+            meta: "DASHBOARD ENTRY",
+            route: {
+              stageId: "dashboard-frontend-bff-summary",
+              stageIds: ["dashboard-frontend-bff-summary"],
+              number: "01",
+              protocol: "DESIGN TBD",
+              label: "대시보드 요약 API 요청",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "dashboardBff",
+            meta: "SUMMARY API · TBD",
+            route: {
+              stageId: "dashboard-bff-gateway-auth-me",
+              stageIds: [
+                "dashboard-bff-gateway-auth-me",
+                "dashboard-gateway-bff-auth-context",
+                "dashboard-bff-gateway-fanout",
+              ],
+              number: "02",
+              protocol: "DESIGN TBD",
+              label: "사용자 확인 후 위젯 API 묶음 요청",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "gateway",
+            meta: "WIDGET ROUTES",
+            route: {
+              stageId: "dashboard-gateway-domain-services",
+              stageIds: ["dashboard-gateway-domain-services"],
+              number: "03",
+              protocol: "DESIGN TBD",
+              label: "도메인 서비스별 위젯 요청 전달",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "domainServices",
+            meta: "WIDGET APIS · TBD",
+            route: {
+              stageId: "dashboard-gateway-bff-results",
+              stageIds: [
+                "dashboard-domain-services-gateway",
+                "dashboard-gateway-bff-results",
+              ],
+              number: "04",
+              protocol: "JSON",
+              label: "위젯별 성공·실패 결과 수집",
+              tone: "design-tbd",
+            },
+          },
+          {
+            id: "dashboardBff",
+            meta: "COMPOSE JSON",
+            route: {
+              stageId: "dashboard-bff-frontend-summary",
+              stageIds: ["dashboard-bff-frontend-summary"],
+              number: "05",
+              protocol: "JSON",
+              label: "화면 전용 요약 JSON 반환",
+              tone: "design-tbd",
+            },
+          },
+          { id: "frontend", meta: "WIDGET RENDER" },
+        ],
+      };
+
+      const flowDefinitions = {
+        login: {
+          title: "Flow 01. 로그인 시작부터 세션 저장 후 프런트 복귀까지",
+          description:
+            "왼쪽 연결 단계를 선택하면 실제 로그인 흐름과 Spring Session Redis 전환 예정 위치가 오른쪽에 표시됩니다.",
+          scope: "LOGIN · 13 ROUTES",
+          heroScope: "01 · LOGIN",
+          actorSequence,
+          routeStages,
+          simpleSequence: simpleFlowSequences.login,
+          emptyEvidence:
+            'Keycloak이 처리하는 표준 로그인 구간입니다. Gateway 설정 관점에서는 앞 단계의 <code>redirect_uri</code>와 <code>state</code>가 유지되는지 확인하면 됩니다.',
+        },
+        me: {
+          title: "Flow 02. 사이트 진입 시 /api/auth/me 세션 확인",
+          description:
+            "브라우저의 /api/auth/me 호출부터 Tomcat 세션 조회, Spring Security 복원, AuthController 판정, 화면 분기까지 표시합니다.",
+          scope: "SESSION · 11 ROUTES",
+          heroScope: "02 · SESSION",
+          actorSequence: meActorSequence,
+          routeStages: meRouteStages,
+          simpleSequence: simpleFlowSequences.me,
+          emptyEvidence:
+            "이 단계는 별도 팝업 없이 오른쪽의 요청·응답 요약만으로 확인할 수 있습니다.",
+        },
+        api: {
+          title: "Flow 03. 일반 서비스 API 요청과 item-service 라우팅",
+          description:
+            "Frontend의 /api/items/** 요청이 Gateway 인증 경계를 지나 localhost:8082의 item-service로 전달되고 응답이 돌아오는 흐름입니다.",
+          scope: "SERVICE API · 7 ROUTES",
+          heroScope: "03 · SERVICE API",
+          actorSequence: apiActorSequence,
+          routeStages: apiRouteStages,
+          simpleSequence: simpleFlowSequences.api,
+          emptyEvidence:
+            "이 단계는 현재 Gateway 설정과 downstream 응답 방향만으로 확인할 수 있습니다.",
+        },
+        dashboard: {
+          title: "Flow 04. Dashboard BFF 기반 대시보드 API 조합",
+          description:
+            "첨부 자료의 BFF 패턴을 현재 Gateway 구조에 맞춰 정리했습니다. 실제 엔드포인트와 추가 위젯 라우트는 DESIGN TBD로 구분합니다.",
+          scope: "DASHBOARD · 8 ROUTES",
+          heroScope: "04 · DASHBOARD",
+          actorSequence: dashboardActorSequence,
+          routeStages: dashboardRouteStages,
+          simpleSequence: simpleFlowSequences.dashboard,
+          emptyEvidence:
+            "이 단계는 대시보드 설계 후보입니다. 위젯 목록과 API 계약이 정해지면 상세 팝업을 확장할 수 있습니다.",
+        },
+      };
+
+      const details = {
+        "login-entry": {
+          kicker: "STEP 01 · FRONTEND",
+          title: "브라우저에서 Gateway 로그인 진입점으로 이동",
+          sections: [
+            {
+              title: "무슨 일이 일어나나",
+              html: `
+                <p>
+                  사용자가 로그인 버튼을 누르면 프런트엔드는 Gateway의
+                  <code>/oauth2/authorization/keycloak</code>으로 이동합니다.
+                  단순 API 호출이 아니라 <strong>브라우저 전체 페이지 이동</strong>입니다.
+                </p>
+                <pre>const AUTH_BASE_URL = "http://localhost:8081";
+const AUTH_LOGIN_URL =
+  \`\${AUTH_BASE_URL}/oauth2/authorization/keycloak\`;
+
+window.location.assign(AUTH_LOGIN_URL);</pre>
+              `,
+            },
+            {
+              title: "왜 이 주소인가",
+              html: `
+                <p>
+                  Spring Security의 OAuth2 로그인 기능은 기본적으로
+                  <code>/oauth2/authorization/{registrationId}</code> 패턴을 인증 시작점으로 사용합니다.
+                  여기서 <code>keycloak</code>은 YAML에 등록한 클라이언트의 registration ID입니다.
+                </p>
+              `,
+            },
+            {
+              title: "공식 문서",
+              html: `
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html" target="_blank" rel="noreferrer">Spring Security OAuth2 Login Core ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "request-resolver": {
+          kicker: "STEP 02 · GATEWAY INTERNAL",
+          title: "Gateway가 registrationId로 로그인 설정을 찾는 과정",
+          sections: [
+            {
+              title: "요청 URL에서 registrationId 추출",
+              html: `
+                <p>
+                  요청 경로 <code>/oauth2/authorization/keycloak</code>에서
+                  마지막 구간인 <code>keycloak</code>을 추출합니다.
+                  Spring Security의 기본 Authorization Request Resolver가 담당하는 구간입니다.
+                </p>
+              `,
+            },
+            {
+              title: "YAML 설정과 연결",
+              html: `
+                <pre>spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: gateway
+            client-secret: \${KEYCLOAK_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          keycloak:
+            issuer-uri: https://bbd-keycloak.inwoohub.com/auth/realms/bbd
+            user-name-attribute: preferred_username</pre>
+                <p>
+                  <code>registration.keycloak</code>의 이름이 요청 URL의
+                  <code>registrationId=keycloak</code>과 연결됩니다.
+                </p>
+              `,
+            },
+            {
+              title: "Gateway 코드에서 활성화되는 지점",
+              html: `
+                <pre>.oauth2Login(oauth2 -> oauth2
+    .successHandler(oauth2LoginSuccessHandler(sessionRegistry()))
+)</pre>
+                <p>
+                  현재 전달받은 <code>SecurityConfig</code>에서는
+                  <code>oauth2Login()</code> 구성이 OAuth2 로그인 필터 체인을 활성화합니다.
+                </p>
+              `,
+            },
+            {
+              title: "공식 문서",
+              html: `
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/client/web/DefaultOAuth2AuthorizationRequestResolver.html" target="_blank" rel="noreferrer">DefaultOAuth2AuthorizationRequestResolver ↗</a>
+                  <a href="https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/client/registration/ClientRegistration.html" target="_blank" rel="noreferrer">ClientRegistration ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "redirect-url": {
+          kicker: "STEP 03 · 302 REDIRECT",
+          title: "Gateway가 조합한 Keycloak Authorization URL",
+          sections: [
+            {
+              title: "중요한 방향",
+              html: `
+                <p>
+                  이 단계에서 Gateway가 Keycloak 서버에 로그인 요청을 직접 보내는 것은 아닙니다.
+                  Gateway는 <code>302</code> 응답과 <code>Location</code> 헤더를 브라우저에 반환하고,
+                  브라우저가 다음 단계에서 Keycloak으로 이동합니다.
+                </p>
+              `,
+            },
+            {
+              title: "생성되는 URL 예시",
+              html: `
+                <pre>HTTP/1.1 302 Found
+Location: https://bbd-keycloak.inwoohub.com/auth/realms/bbd/protocol/openid-connect/auth
+  ?response_type=code
+  &client_id=gateway
+  &scope=openid%20profile%20email
+  &state=...
+  &redirect_uri=http://localhost:8081/login/oauth2/code/keycloak
+  &nonce=...
+  [&code_challenge=...]
+  [&code_challenge_method=S256]</pre>
+              `,
+            },
+            {
+              title: "URL 구성 요소와 출처",
+              html: `
+                <div class="modal-table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>요소</th>
+                        <th>예시 값</th>
+                        <th>출처</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Authorization Endpoint</td>
+                        <td><code>.../protocol/openid-connect/auth</code></td>
+                        <td><code>issuer-uri</code> 기반 OIDC discovery</td>
+                      </tr>
+                      <tr>
+                        <td><code>response_type</code></td>
+                        <td><code>code</code></td>
+                        <td><code>authorization_code</code> grant</td>
+                      </tr>
+                      <tr>
+                        <td><code>client_id</code></td>
+                        <td><code>gateway</code></td>
+                        <td><code>registration.keycloak.client-id</code></td>
+                      </tr>
+                      <tr>
+                        <td><code>scope</code></td>
+                        <td><code>openid profile email</code></td>
+                        <td><code>registration.keycloak.scope</code></td>
+                      </tr>
+                      <tr>
+                        <td><code>redirect_uri</code></td>
+                        <td><code>http://localhost:8081/login/oauth2/code/keycloak</code></td>
+                        <td><code>{baseUrl}</code>, <code>{registrationId}</code> 치환</td>
+                      </tr>
+                      <tr>
+                        <td><code>state</code></td>
+                        <td>랜덤 문자열</td>
+                        <td>Spring Security 생성</td>
+                      </tr>
+                      <tr>
+                        <td><code>nonce</code></td>
+                        <td>랜덤 문자열</td>
+                        <td><code>openid</code> scope 기반 OIDC 요청</td>
+                      </tr>
+                      <tr class="optional">
+                        <td><code>code_challenge</code>, <code>S256</code></td>
+                        <td>조건부 포함</td>
+                        <td>PKCE 조건 충족 시 생성 · 실제 302 응답 확인 필요</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              `,
+            },
+            {
+              title: "PKCE 확인 메모",
+              html: `
+                <p>
+                  현재 YAML에는 <code>client-secret</code>이 있습니다.
+                  Spring Security 문서상 PKCE 자동 적용은 public client이거나
+                  provider 설정의 <code>requireProofKey=true</code> 조건에 해당할 때 적용됩니다.
+                  따라서 대괄호로 표시한 PKCE 파라미터는 실제 Gateway의 302 응답을 캡처한 뒤 확정하는 편이 정확합니다.
+                </p>
+              `,
+            },
+            {
+              title: "공식 문서",
+              html: `
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/client/authorization-grants.html#oauth2Client-auth-code-pkce" target="_blank" rel="noreferrer">Spring Security PKCE ↗</a>
+                  <a href="https://openid.net/specs/openid-connect-discovery-1_0.html" target="_blank" rel="noreferrer">OIDC Discovery Spec ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "keycloak-handoff": {
+          kicker: "STEP 03 · KEYCLOAK HANDOFF",
+          title: "Gateway 설정이 Keycloak 표준 로그인 구간으로 이어지는 지점",
+          sections: [
+            {
+              title: "Gateway가 넘겨준 값",
+              html: `
+                <p>
+                  브라우저는 Gateway의 <code>Location</code> 헤더에 담긴 URL을 따라
+                  Keycloak Authorization Endpoint로 이동합니다.
+                  Keycloak은 이 URL에 포함된 값으로 로그인 이후 callback을 준비합니다.
+                </p>
+                <ul class="modal-list">
+                  <li><code>client_id=gateway</code>: Keycloak에 등록된 클라이언트 식별자</li>
+                  <li><code>redirect_uri=http://localhost:8081/login/oauth2/code/keycloak</code>: 로그인 성공 후 돌아올 Gateway 주소</li>
+                  <li><code>state=...</code>: 최초 인증 요청과 callback을 연결하는 값</li>
+                  <li><code>nonce=...</code>: OIDC ID Token 검증에 사용하는 값</li>
+                </ul>
+              `,
+            },
+            {
+              title: "Keycloak이 자동 처리하는 구간",
+              html: `
+                <p>
+                  로그인 페이지 표시, ID/PW 검증, Authorization Code 생성,
+                  기존 <code>state</code> 유지, callback URL 조합은 Keycloak이 처리합니다.
+                  Gateway 구현 관점에서는 이 구간의 내부 구현보다
+                  처음 넘긴 <code>redirect_uri</code>와 <code>state</code>가 callback으로 이어지는지가 중요합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "keycloak-callback": {
+          kicker: "STEP 06 · KEYCLOAK STANDARD",
+          title: "Keycloak이 Gateway Callback URL을 만들어 브라우저로 전달",
+          sections: [
+            {
+              title: "Keycloak의 자동 처리 순서",
+              html: `
+                <ol class="modal-list">
+                  <li><code>client_id=gateway</code>에 해당하는 클라이언트를 확인합니다.</li>
+                  <li>초기 요청의 <code>redirect_uri</code>가 Valid Redirect URI인지 확인합니다.</li>
+                  <li>사용자 로그인이 성공하면 Authorization Code를 생성합니다.</li>
+                  <li>초기 요청의 <code>state</code>를 그대로 유지합니다.</li>
+                  <li>callback URL에 <code>code</code>와 <code>state</code>를 붙여 브라우저에 <code>302</code> 응답을 보냅니다.</li>
+                </ol>
+              `,
+            },
+            {
+              title: "브라우저가 받는 응답",
+              html: `
+                <pre>HTTP/1.1 302 Found
+Location: http://localhost:8081/login/oauth2/code/keycloak
+  ?code=abc123
+  &amp;state=xyz...</pre>
+                <p>
+                  Keycloak이 Gateway를 직접 호출하는 것이 아니라 브라우저에게 다음 이동 주소를 알려 줍니다.
+                  브라우저가 이 주소를 따라가면서 Gateway callback 요청이 발생합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "gateway-callback-filter": {
+          kicker: "STEP 07 · GATEWAY CALLBACK",
+          title: "Gateway Callback 요청과 JSESSIONID의 역할",
+          sections: [
+            {
+              title: "브라우저가 Gateway로 보내는 요청",
+              html: `
+                <pre>GET /login/oauth2/code/keycloak?code=abc123&amp;state=xyz...
+Host: localhost:8081
+Cookie: JSESSIONID=...</pre>
+              `,
+            },
+            {
+              title: "JSESSIONID는 Gateway 세션 쿠키",
+              html: `
+                <p>
+                  이 <code>JSESSIONID</code>는 Keycloak 쿠키가 아니라 Gateway 쿠키입니다.
+                  Gateway는 세션에서 최초 로그인 진입 시 저장한 Authorization Request를 다시 찾고,
+                  callback의 <code>state</code>가 원래 요청과 일치하는지 확인합니다.
+                </p>
+                <ul class="modal-list">
+                  <li><code>state</code>: 최초 요청과 callback 연결</li>
+                  <li><code>nonce</code>: ID Token 검증에 사용</li>
+                  <li><code>code_verifier</code>: PKCE가 적용된 경우 token 요청에 사용</li>
+                  <li><code>authorizationRequest</code>: callback 처리에 필요한 최초 요청 정보</li>
+                </ul>
+              `,
+            },
+            {
+              title: "Spring Security 처리 지점",
+              html: `
+                <p>
+                  <code>OAuth2LoginAuthenticationFilter</code>가
+                  <code>/login/oauth2/code/keycloak</code> 요청을 잡고,
+                  code와 state를 읽어 AuthenticationManager에 인증 처리를 위임합니다.
+                </p>
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-security/reference/api/java/org/springframework/security/oauth2/client/web/OAuth2LoginAuthenticationFilter.html" target="_blank" rel="noreferrer">OAuth2LoginAuthenticationFilter ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "token-exchange": {
+          kicker: "STEP 08 · TOKEN EXCHANGE",
+          title: "Gateway가 Authorization Code를 토큰으로 교환",
+          sections: [
+            {
+              title: "서버 간 요청",
+              html: `
+                <pre>POST https://bbd-keycloak.inwoohub.com/auth/realms/bbd/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=...
+&amp;redirect_uri=http://localhost:8081/login/oauth2/code/keycloak
+&amp;client_id=gateway
+&amp;client_secret=...
+[&amp;code_verifier=...]</pre>
+                <p>
+                  callback을 받은 Gateway가 Keycloak Token Endpoint로 직접 보내는 요청입니다.
+                  브라우저는 이 구간에 관여하지 않습니다.
+                </p>
+              `,
+            },
+            {
+              title: "PKCE는 실제 적용 여부를 확인",
+              html: `
+                <p>
+                  현재 YAML에는 <code>client-secret</code>이 있으므로
+                  <code>code_verifier</code>가 항상 전송된다고 단정하지 않습니다.
+                  실제 Authorization URL에 <code>code_challenge</code>가 포함되는지 캡처한 뒤 확정하면 됩니다.
+                </p>
+              `,
+            },
+            {
+              title: "Keycloak 응답",
+              html: `
+                <pre>{
+  "access_token": "...",
+  "refresh_token": "...",
+  "id_token": "..."
+}</pre>
+              `,
+            },
+          ],
+        },
+        "gateway-session": {
+          kicker: "STEP 10 · GATEWAY INTERNAL",
+          title: "OIDC 토큰 검증부터 Gateway 세션 저장까지",
+          sections: [
+            {
+              title: "Spring Security 내부 흐름",
+              html: `
+                <pre>OAuth2LoginAuthenticationFilter
+  → AuthenticationManager.authenticate(...)
+  → OidcAuthorizationCodeAuthenticationProvider.authenticate(...)
+  → OAuth2LoginAuthenticationToken
+  → OAuth2AuthenticationToken
+  → successfulAuthentication(...)</pre>
+                <p>
+                  <code>openid</code> scope가 있으므로 OIDC 처리 경로에서
+                  <code>id_token</code>과 <code>nonce</code>를 검증하고 OIDC 사용자를 구성합니다.
+                </p>
+              `,
+            },
+            {
+              title: "Gateway가 저장하는 로그인 상태",
+              html: `
+                <ul class="modal-list">
+                  <li><code>DefaultOidcUser</code>: 로그인 사용자 principal과 ID Token claims</li>
+                  <li><code>OAuth2AuthenticationToken</code>: 인증 완료 객체와 registrationId <code>keycloak</code></li>
+                  <li><code>SPRING_SECURITY_CONTEXT</code>: 세션에서 이후 요청의 로그인 상태를 복원하는 값</li>
+                  <li><code>OAuth2AuthorizedClient</code>: access token, refresh token과 클라이언트 정보</li>
+                </ul>
+              `,
+            },
+            {
+              title: "대표 사용자명 설정",
+              html: `
+                <pre>provider:
+  keycloak:
+    user-name-attribute: preferred_username</pre>
+                <p>
+                  로그인 이후 <code>authentication.getName()</code>은 이 설정을 기준으로 대표 이름을 제공합니다.
+                  <code>/api/auth/me</code>에서도 같은 값을 <code>name</code>으로 반환합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "login-redis-session-plan": {
+          kicker: "FLOW 01 · STEP 11 · REDIS · SESSION SWITCH TBD",
+          title: "Redis 접속 설정은 있지만 세션 저장소 전환은 확인이 필요합니다",
+          sections: [
+            {
+              title: "현재 코드에서 확인되는 범위",
+              html: `
+                <pre>spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379</pre>
+                <p>
+                  Redis 접속 정보는 YAML에 있습니다.
+                  다만 제공된 코드에는 Spring Session Redis 의존성과 SessionRepository 활성화 여부가 포함되어 있지 않습니다.
+                  따라서 세션이 이미 Redis에 저장된다고 단정하지 않습니다.
+                </p>
+              `,
+            },
+            {
+              title: "Spring Session Redis 전환 시 저장 위치 변화",
+              html: `
+                <pre>[전환 전]
+Gateway
+→ 로컬 메모리의 HttpSession에 로그인 상태 저장
+→ 브라우저에 JSESSIONID 전달
+
+[Spring Session Redis 전환 후]
+Gateway
+→ Redis-backed HttpSession에 로그인 상태 저장
+→ 브라우저에 JSESSIONID 전달</pre>
+                <p>
+                  브라우저에는 계속 <code>JSESSIONID</code>만 전달합니다.
+                  전환 후에는 Spring Session이 세션 저장 위치를 Gateway 로컬 메모리에서 Redis로 바꿉니다.
+                </p>
+              `,
+            },
+            {
+              title: "Redis에 저장할 세션 데이터",
+              html: `
+                <ul class="modal-list">
+                  <li>sessionId, 생성 시간, 마지막 접근 시간, 만료 시간</li>
+                  <li><code>SPRING_SECURITY_CONTEXT</code>, SecurityContext, Authentication</li>
+                  <li>OidcUser 정보와 설정에 따른 OAuth2AuthorizedClient</li>
+                  <li>access token, ID token, refresh token 등 세션에 포함된 토큰 정보</li>
+                </ul>
+                <p>
+                  정확한 직렬화 형태와 실제 저장 속성은 Spring Session 설정에 따라 달라질 수 있습니다.
+                </p>
+              `,
+            },
+            {
+              title: "도입 효과",
+              html: `
+                <pre>Gateway A ─┐
+           ├→ Redis의 동일한 로그인 세션
+Gateway B ─┘</pre>
+                <p>
+                  Gateway 인스턴스가 여러 대여도 같은 로그인 세션을 조회할 수 있습니다.
+                  프런트의 쿠키 전송 방식은 바뀌지 않습니다.
+                </p>
+              `,
+            },
+            {
+              title: "공식 문서",
+              html: `
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-session/reference/guides/boot-redis.html" target="_blank" rel="noreferrer">Spring Session Boot Redis Guide ↗</a>
+                  <a href="https://docs.spring.io/spring-session/reference/configuration/redis.html" target="_blank" rel="noreferrer">Spring Session Redis Configuration ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "login-success-redirect": {
+          kicker: "STEP 13 · LOGIN SUCCESS",
+          title: "세션 저장 이후 브라우저를 프런트 화면으로 이동",
+          sections: [
+            {
+              title: "최종 302 응답",
+              html: `
+                <pre>HTTP/1.1 302 Found
+Location: http://localhost:5173/auth/callback
+[Set-Cookie: JSESSIONID=...]</pre>
+                <p>
+                  Spring Security의 로그인 성공 처리가 끝나면 Gateway는 브라우저에 다음 이동 위치를 전달합니다.
+                  세션이 새로 만들어졌거나 세션 ID가 변경되면 <code>JSESSIONID</code>가 함께 내려갈 수 있습니다.
+                </p>
+              `,
+            },
+            {
+              title: "현재 successHandler 기준",
+              html: `
+                <pre>.oauth2Login(oauth2 -&gt; oauth2
+    .successHandler(oauth2LoginSuccessHandler(sessionRegistry()))
+)
+
+response.sendRedirect("http://localhost:5173/auth/callback");</pre>
+                <p>
+                  별도 successHandler를 제거하면 원래 요청 URL 또는 기본 성공 URL 복원 방식으로 달라질 수 있습니다.
+                  현재 자료는 전달받은 successHandler 설정을 우선 반영했습니다.
+                </p>
+              `,
+            },
+            {
+              title: "JSESSIONID는 Tomcat이 응답에 붙임",
+              html: `
+                <p>
+                  <code>successHandler</code>가 JSESSIONID 문자열을 직접 만드는 것은 아닙니다.
+                  HttpSession이 새로 생성됐거나 session fixation 방어로 session ID가 변경되면
+                  Servlet Container가 응답에 쿠키를 자동으로 추가합니다.
+                  Tomcat을 사용한다면 Tomcat이 이 역할을 담당합니다.
+                </p>
+                <pre>Set-Cookie: JSESSIONID=새세션ID; Path=/; HttpOnly</pre>
+              `,
+            },
+          ],
+        },
+        "me-frontend-request": {
+          kicker: "FLOW 02 · STEP 01 · FRONTEND",
+          title: "React 앱이 /api/auth/me로 Gateway 세션을 확인",
+          sections: [
+            {
+              title: "실제 프런트 코드",
+              html: `
+                <pre>const AUTH_ME_URL = \`\${AUTH_BASE_URL}/api/auth/me\`;
+
+export async function checkSession() {
+  const response = await fetch(AUTH_ME_URL, {
+    credentials: "include",
+    redirect: "manual",
+  });
+
+  // 응답 검증 후 로그인 사용자 또는 null 반환
+}</pre>
+              `,
+            },
+            {
+              title: "언제 호출하나",
+              html: `
+                <p>
+                  보호 화면 진입 시 <code>ProtectedRoute</code>가 <code>checkSession()</code>을 호출합니다.
+                  현재 프런트는 URL이 바뀌거나 브라우저 탭이 다시 보이는 시점에도 세션을 새로 확인합니다.
+                  서버에서 세션이 만료된 상황을 화면에 반영하기 위한 동작입니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-http-only-cookie": {
+          kicker: "FLOW 02 · STEP 01 · COOKIE",
+          title: "HttpOnly JSESSIONID는 브라우저가 자동으로 전송",
+          sections: [
+            {
+              title: "JavaScript가 쿠키를 읽지 않는 이유",
+              html: `
+                <p>
+                  <code>JSESSIONID</code>는 Gateway 세션을 찾는 key입니다.
+                  <code>HttpOnly</code>를 사용하면 프런트 JavaScript의
+                  <code>document.cookie</code>로 이 값을 읽을 수 없습니다.
+                  XSS가 발생했을 때 세션 쿠키 탈취 위험을 줄이는 설정입니다.
+                </p>
+              `,
+            },
+            {
+              title: "브라우저가 붙이는 요청 헤더",
+              html: `
+                <pre>GET /api/auth/me HTTP/1.1
+Host: localhost:8081
+Cookie: JSESSIONID=ABC123</pre>
+                <p>
+                  프런트는 쿠키 문자열을 직접 만들지 않습니다.
+                  <code>credentials: "include"</code>를 지정하고 브라우저의 쿠키 정책과 CORS 설정이 맞으면
+                  브라우저가 저장된 쿠키를 자동으로 보냅니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-session-lookup": {
+          kicker: "FLOW 02 · STEP 02 · SESSION",
+          title: "Tomcat이 JSESSIONID로 기존 HttpSession을 찾는 과정",
+          sections: [
+            {
+              title: "Servlet Container가 먼저 처리하는 구간",
+              html: `
+                <pre>브라우저가 JSESSIONID 쿠키 전송
+→ Tomcat이 Cookie 헤더에서 JSESSIONID 추출
+→ Tomcat Session Manager에서 sessionId 검색
+→ 있으면 기존 HttpSession 반환
+→ Spring Security가 SPRING_SECURITY_CONTEXT 조회</pre>
+                <p>
+                  Spring Security보다 먼저 Tomcat 같은 Servlet Container가 HTTP 요청을 파싱합니다.
+                  <code>JSESSIONID</code>는 인증 정보 자체가 아니라 서버 측 HttpSession을 찾기 위한 key입니다.
+                </p>
+              `,
+            },
+            {
+              title: "request.getSession(false)의 의미",
+              html: `
+                <pre>HttpSession httpSession = request.getSession(false);
+
+// 개념적인 내부 흐름
+String sessionId = request.getRequestedSessionId();
+Session session = manager.findSession(sessionId);
+
+if (session != null &amp;&amp; session.isValid()) {
+    return session.getSession();
+}
+
+return null; // create=false: 새 세션을 만들지 않음</pre>
+                <p>
+                  세션 ID가 없거나, 서버 저장소에서 찾지 못했거나, 이미 만료된 경우에는 <code>null</code>을 반환합니다.
+                  HttpSession이 있어도 <code>SPRING_SECURITY_CONTEXT</code>가 없으면 로그인 상태는 아닙니다.
+                </p>
+              `,
+            },
+            {
+              title: "디버거에서 확인할 값",
+              html: `
+                <ul class="modal-list">
+                  <li><code>request.getRequestedSessionId()</code>: 브라우저가 보낸 sessionId</li>
+                  <li><code>request.isRequestedSessionIdFromCookie()</code>: 쿠키에서 온 값인지 확인</li>
+                  <li><code>request.isRequestedSessionIdValid()</code>: Tomcat이 유효한 세션으로 판단하는지 확인</li>
+                  <li><code>request.getSession(false)</code>: 기존 HttpSession 조회 결과</li>
+                  <li><code>request.getSession(false).getAttribute("SPRING_SECURITY_CONTEXT")</code>: 로그인 인증 정보 확인</li>
+                </ul>
+              `,
+            },
+            {
+              title: "현재 Gateway 쿠키 설정",
+              html: `
+                <pre>server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: false   # 로컬 HTTP
+        same-site: lax
+        path: /</pre>
+                <p>
+                  운영 HTTPS 환경에서는 <code>secure: true</code>로 바꾸는 것이 맞습니다.
+                  <code>path: /</code>은 Gateway의 여러 경로에서 같은 세션 쿠키를 사용할 수 있게 합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-redis-session-plan": {
+          kicker: "FLOW 02 · STEP 03 · REDIS · SESSION SWITCH TBD",
+          title: "Redis 접속 설정은 있지만 세션 저장소 전환은 확인이 필요합니다",
+          sections: [
+            {
+              title: "현재 코드에서 확인되는 범위",
+              html: `
+                <pre>spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # password: your-redis-password</pre>
+                <p>
+                  Redis 연결 대상은 YAML에 있습니다.
+                  그러나 제공된 코드에는 Spring Session Redis 의존성과 SessionRepository 활성화 여부가 없으므로,
+                  현재 HttpSession이 Redis에 저장된다고 단정할 수 없습니다.
+                </p>
+              `,
+            },
+            {
+              title: "Spring Session Redis 전환 전후",
+              html: `
+                <pre>[전환 전]
+브라우저 JSESSIONID
+→ Gateway 로컬 메모리의 HttpSession
+
+[Spring Session Redis 전환 후]
+브라우저 JSESSIONID
+→ Gateway A 또는 Gateway B
+→ Redis-backed HttpSession
+→ SecurityContext / Authentication 복원</pre>
+                <p>
+                  Spring Session Redis로 전환해도 브라우저가 보내는 값은 계속 <code>JSESSIONID</code>입니다.
+                  바뀌는 것은 Gateway 내부의 세션 저장 위치입니다.
+                </p>
+              `,
+            },
+            {
+              title: "적용할 때 필요한 것",
+              html: `
+                <ul class="modal-list">
+                  <li>Gateway에 <code>Spring Session Data Redis</code>를 추가합니다.</li>
+                  <li>현재 YAML의 Redis 접속 정보가 대상 환경에 맞는지 확인합니다.</li>
+                  <li>SessionRepository가 Redis 기반으로 활성화되는지 확인합니다.</li>
+                  <li>로컬 HttpSession 대신 Redis-backed HttpSession을 사용하도록 전환합니다.</li>
+                  <li>프런트의 <code>credentials: "include"</code>와 JSESSIONID 쿠키 전송 방식은 그대로 유지합니다.</li>
+                </ul>
+              `,
+            },
+            {
+              title: "Redis에 저장되는 세션 데이터",
+              html: `
+                <p>
+                  정확한 직렬화 형태는 설정에 따라 달라질 수 있지만, 개념적으로는 아래 데이터가 세션에 포함됩니다.
+                </p>
+                <ul class="modal-list">
+                  <li>sessionId, 생성 시간, 마지막 접근 시간, 만료 시간</li>
+                  <li><code>SPRING_SECURITY_CONTEXT</code>, SecurityContext, Authentication</li>
+                  <li>OidcUser 정보와 설정에 따른 OAuth2AuthorizedClient, 토큰 정보</li>
+                </ul>
+              `,
+            },
+            {
+              title: "공식 문서",
+              html: `
+                <div class="source-links">
+                  <a href="https://docs.spring.io/spring-session/reference/guides/boot-redis.html" target="_blank" rel="noreferrer">Spring Session Boot Redis Guide ↗</a>
+                  <a href="https://docs.spring.io/spring-session/reference/configuration/redis.html" target="_blank" rel="noreferrer">Spring Session Redis Configuration ↗</a>
+                </div>
+              `,
+            },
+          ],
+        },
+        "me-authentication-check": {
+          kicker: "FLOW 02 · STEP 05 · SECURITY CONTEXT",
+          title: "Spring Security가 SecurityContext와 Authentication을 복원",
+          sections: [
+            {
+              title: "세션 내부 구조",
+              html: `
+                <pre>JSESSIONID
+→ HttpSession
+→ SPRING_SECURITY_CONTEXT
+→ SecurityContext
+→ Authentication</pre>
+                <p>
+                  담당 구현체는 <code>HttpSessionSecurityContextRepository</code>입니다.
+                  OAuth2/OIDC 로그인에서는 Authentication으로 보통
+                  <code>OAuth2AuthenticationToken</code>을 사용하고,
+                  principal은 <code>OidcUser</code> 또는 <code>DefaultOidcUser</code>입니다.
+                </p>
+              `,
+            },
+            {
+              title: "세션 존재와 로그인 상태는 다름",
+              html: `
+                <ol class="modal-list">
+                  <li>브라우저에 JSESSIONID 쿠키가 있습니다.</li>
+                  <li>Gateway 로컬 메모리 또는 Redis에 해당 HttpSession이 살아 있습니다.</li>
+                  <li>세션 안에 <code>SPRING_SECURITY_CONTEXT</code>가 있습니다.</li>
+                  <li>SecurityContext 안에 Authentication이 있습니다.</li>
+                  <li>컨트롤러에서 Authentication의 실제 로그인 사용자 여부를 추가로 판정합니다.</li>
+                </ol>
+              `,
+            },
+            {
+              title: "Resource Server JWT 설정과의 구분",
+              html: `
+                <pre>security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: https://bbd-keycloak.inwoohub.com/auth/realms/bbd</pre>
+                <p>
+                  이 설정은 Bearer JWT 검증 경로에 사용됩니다.
+                  브라우저가 <code>JSESSIONID</code>로 <code>/api/auth/me</code>를 호출하는 현재 설명은 세션 기반 복원 경로입니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-auth-controller-injection": {
+          kicker: "FLOW 02 · STEP 06 · AUTH CONTROLLER",
+          title: "복원된 Authentication이 AuthController에 주입됩니다",
+          sections: [
+            {
+              title: "컨트롤러 진입점",
+              html: `
+                <pre>@GetMapping("/api/auth/me")
+public Map&lt;String, Object&gt; me(Authentication authentication) {
+    Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();
+    ...
+}</pre>
+                <p>
+                  컨트롤러가 <code>request.getSession(false)</code>를 직접 호출하는 구조는 아닙니다.
+                  앞선 Spring Security 필터 처리에서 복원된 현재 요청의 Authentication을 메서드 파라미터로 전달받습니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-auth-controller-decision": {
+          kicker: "FLOW 02 · STEP 07 · AUTH DECISION",
+          title: "null, 미인증 상태, 익명 토큰을 모두 제외합니다",
+          sections: [
+            {
+              title: "실제 AuthController 분기 조건",
+              html: `
+                <pre>if (authentication == null
+        || !authentication.isAuthenticated()
+        || authentication instanceof AnonymousAuthenticationToken) {
+
+    result.put("authenticated", false);
+    return result;
+}</pre>
+                <p>
+                  Spring Security 설정에 따라 로그인하지 않은 요청에도
+                  <code>AnonymousAuthenticationToken</code>이 들어올 수 있습니다.
+                  그래서 <code>authentication != null</code>만으로 로그인 여부를 판단하면 안 됩니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-auth-controller-claims": {
+          kicker: "FLOW 02 · STEP 08 · OIDC CLAIMS",
+          title: "인증 사용자의 대표 이름과 OIDC claim을 응답에 담습니다",
+          sections: [
+            {
+              title: "name은 preferred_username 설정과 연결",
+              html: `
+                <pre>provider:
+  keycloak:
+    user-name-attribute: preferred_username
+
+result.put("name", authentication.getName());</pre>
+                <p>
+                  현재 YAML은 <code>preferred_username</code>을 대표 사용자명으로 지정합니다.
+                  따라서 <code>authentication.getName()</code>도 이 설정을 기준으로 값을 제공합니다.
+                </p>
+              `,
+            },
+            {
+              title: "OidcUser에서 username과 sub 추출",
+              html: `
+                <pre>Object principal = authentication.getPrincipal();
+
+if (principal instanceof OidcUser oidcUser) {
+    result.put("username", oidcUser.getPreferredUsername());
+    result.put("sub", oidcUser.getSubject());
+}</pre>
+                <ul class="modal-list">
+                  <li><code>preferred_username</code>: Keycloak이 제공하는 대표 사용자명 claim</li>
+                  <li><code>sub</code>: 이름이나 이메일이 바뀌어도 유지되는 OIDC 표준 고유 식별자</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+        "me-response-contract": {
+          kicker: "FLOW 02 · STEP 09 · RESPONSE",
+          title: "/api/auth/me의 JSON 응답 계약",
+          sections: [
+            {
+              title: "미인증 JSON을 받으려면 SecurityConfig 확인 필요",
+              html: `
+                <p>
+                  이 엔드포인트는 로그인 상태를 물어보기 위해 호출합니다.
+                  미인증 요청도 컨트롤러에 도달하도록 허용하면,
+                  Keycloak redirect 대신 JSON의 <code>authenticated</code> 값으로 상태를 표현하는 편이 자연스럽습니다.
+                  다만 제공된 코드에는 SecurityConfig가 없으므로 실제 허용 여부는 확인이 필요합니다.
+                </p>
+                <pre>// SecurityConfig에서 확인할 항목
+.requestMatchers("/api/auth/me").permitAll()</pre>
+              `,
+            },
+            {
+              title: "응답 예시",
+              html: `
+                <pre>// 로그인 세션이 살아 있음
+{
+  "authenticated": true,
+  "name": "사용자",
+  "username": "hq001",
+  "sub": "..."
+}
+
+// 세션이 없거나 만료됨
+{
+  "authenticated": false
+}</pre>
+              `,
+            },
+          ],
+        },
+        "me-frontend-normalize": {
+          kicker: "FLOW 02 · STEP 10 · FRONTEND",
+          title: "checkSession()은 사용자 객체 또는 null을 반환",
+          sections: [
+            {
+              title: "프런트의 응답 정리 규칙",
+              html: `
+                <pre>if (!response.ok || response.type === "opaqueredirect") {
+  return null;
+}
+
+const session = await response.json();
+
+if (session.authenticated !== true) {
+  return null;
+}
+
+return {
+  authenticated: true,
+  name: typeof session.name === "string" ? session.name : "사용자",
+  username: typeof session.username === "string"
+    ? session.username
+    : undefined,
+  sub: typeof session.sub === "string" ? session.sub : undefined,
+};</pre>
+              `,
+            },
+            {
+              title: "왜 null 하나로 정리하나",
+              html: `
+                <p>
+                  세션 만료, 응답 오류, redirect 응답, 네트워크 문제를 모두
+                  “현재 보호 화면을 열 수 없음”으로 정리하면 Route Guard가 단순해집니다.
+                  실제 사용자에게는 로그인 화면 이동이라는 일관된 결과를 제공합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "me-protected-route": {
+          kicker: "FLOW 02 · STEP 11 · ROUTE GUARD",
+          title: "ProtectedRoute가 사이트 접근 화면을 결정",
+          sections: [
+            {
+              title: "세 가지 렌더링 상태",
+              html: `
+                <pre>if (authenticationState === "checking") {
+  return &lt;RedirectingScreen /&gt;;
+}
+
+if (authenticationState === "unauthenticated") {
+  return &lt;Navigate replace to={\`/login?returnTo=\${...}\`} /&gt;;
+}
+
+return &lt;Outlet context={user} /&gt;;</pre>
+              `,
+            },
+            {
+              title: "로그인 이후 사이트 접근 흐름",
+              html: `
+                <ol class="modal-list">
+                  <li>사이트 진입 직후에는 보안 로그인 연결 화면을 표시합니다.</li>
+                  <li><code>/api/auth/me</code>가 인증 사용자를 반환하면 요청한 보호 화면을 렌더링합니다.</li>
+                  <li>세션이 없거나 만료됐으면 현재 경로를 <code>returnTo</code>로 보존하고 로그인 화면으로 이동합니다.</li>
+                </ol>
+              `,
+            },
+          ],
+        },
+        "api-items-request": {
+          kicker: "FLOW 03 · STEP 01 · SERVICE API",
+          title: "Frontend는 Gateway의 /api/items/** 경로로 요청합니다",
+          sections: [
+            {
+              title: "브라우저 요청 예시",
+              html: `
+                <pre>GET /api/items/P-1004 HTTP/1.1
+Host: localhost:8081
+Cookie: JSESSIONID=...</pre>
+                <p>
+                  <code>/api/items/P-1004</code>는 설명을 위한 예시입니다.
+                  Gateway에서 확정 가능한 외부 경로 범위는 <code>/api/items/**</code>입니다.
+                  실제 메서드와 세부 URL은 item-service 컨트롤러 계약을 확인해야 합니다.
+                </p>
+              `,
+            },
+            {
+              title: "쿠키는 브라우저가 자동 전송",
+              html: `
+                <p>
+                  로그인 이후 브라우저는 Gateway가 발급한 <code>JSESSIONID</code>를 보관합니다.
+                  Frontend가 쿠키 문자열을 직접 만들지 않아도 브라우저 정책과 CORS 설정이 맞으면 요청에 자동으로 포함됩니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "api-security-boundary": {
+          kicker: "FLOW 03 · STEP 02 · SECURITY",
+          title: "일반 서비스 요청의 인증 경계는 추가 SecurityConfig 확인이 필요합니다",
+          sections: [
+            {
+              title: "세션 기반 브라우저 요청",
+              html: `
+                <pre>Cookie: JSESSIONID=...
+→ HttpSession 조회
+→ SPRING_SECURITY_CONTEXT
+→ Authentication 복원</pre>
+                <p>
+                  브라우저가 Gateway 세션 쿠키를 보내는 요청은 Flow 02와 같은 방식으로 인증 정보를 복원할 수 있습니다.
+                </p>
+              `,
+            },
+            {
+              title: "Bearer JWT 경로와 구분",
+              html: `
+                <pre>security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: https://bbd-keycloak.inwoohub.com/auth/realms/bbd</pre>
+                <p>
+                  YAML에는 Resource Server JWT 설정도 있습니다.
+                  <code>Authorization: Bearer ...</code> 요청은 JWT 검증 경로를 사용합니다.
+                  세션 인증과 JWT 인증 중 어떤 경로를 <code>/api/items/**</code>에 허용할지는 SecurityConfig에서 확인해야 합니다.
+                </p>
+              `,
+            },
+            {
+              title: "확인할 SecurityConfig 항목",
+              html: `
+                <pre>// 예시: 실제 SecurityConfig 확인 필요
+.requestMatchers("/api/items/**").authenticated()</pre>
+                <p>
+                  제공된 YAML과 AuthController만으로는 일반 서비스 API의 정확한 인가 규칙을 확정할 수 없습니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "api-route-config": {
+          kicker: "FLOW 03 · STEP 03 · GATEWAY ROUTE",
+          title: "item-service 라우트는 Gateway YAML에서 확인됩니다",
+          sections: [
+            {
+              title: "현재 라우팅 설정",
+              html: `
+                <pre>spring:
+  cloud:
+    gateway:
+      routes:
+        - id: item-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/items/**</pre>
+                <p>
+                  Gateway는 <code>/api/items/**</code> 요청을 <code>item-service</code> 라우트로 선택하고,
+                  <code>http://localhost:8082</code>로 전달합니다.
+                </p>
+              `,
+            },
+            {
+              title: "현재 자료에서 단정하지 않는 부분",
+              html: `
+                <ul class="modal-list">
+                  <li><code>RewritePath</code> 필터가 없으므로 downstream 경로 변환 여부를 임의로 추가하지 않습니다.</li>
+                  <li><code>TokenRelay</code> 설정이 없으므로 access token 전달 여부를 단정하지 않습니다.</li>
+                  <li>사용자 헤더를 넣는 custom filter가 제공되지 않았으므로 내부 헤더 전달도 확인 필요입니다.</li>
+                </ul>
+              `,
+            },
+            {
+              title: "Gateway timeout",
+              html: `
+                <pre>httpclient:
+  connect-timeout: 3000
+  response-timeout: 5s</pre>
+              `,
+            },
+          ],
+        },
+        "api-item-service-tbd": {
+          kicker: "FLOW 03 · STEP 05 · SERVICE CODE TBD",
+          title: "item-service 내부 구현은 서비스 코드가 있어야 확정할 수 있습니다",
+          sections: [
+            {
+              title: "현재 확인된 범위",
+              html: `
+                <pre>Gateway
+→ Path=/api/items/**
+→ http://localhost:8082
+→ item-service</pre>
+                <p>
+                  현재 자료로는 Gateway가 item-service를 호출한다는 점까지 확인됩니다.
+                </p>
+              `,
+            },
+            {
+              title: "추가로 확인할 코드",
+              html: `
+                <ul class="modal-list">
+                  <li>item-service의 Controller 경로와 HTTP 메서드</li>
+                  <li>서비스 내부 인증 정보 수신 방식: 세션, Bearer JWT, 내부 헤더 등</li>
+                  <li><code>@PreAuthorize</code> 또는 도메인 정책 기반 세부 인가</li>
+                  <li>Repository와 DB 조회 조건</li>
+                  <li>성공 DTO와 표준 오류 응답 계약</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+        "api-response-contract": {
+          kicker: "FLOW 03 · STEP 07 · RESPONSE",
+          title: "일반 서비스 API는 업무 데이터만 Frontend에 반환합니다",
+          sections: [
+            {
+              title: "응답 예시",
+              html: `
+                <pre>HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "itemId": "P-1004",
+  "name": "...",
+  "status": "..."
+}</pre>
+                <p>
+                  필드 구성은 예시입니다. 실제 item-service DTO에 맞춰 확정해야 합니다.
+                </p>
+              `,
+            },
+            {
+              title: "브라우저에 노출하지 않는 값",
+              html: `
+                <ul class="modal-list">
+                  <li>access token</li>
+                  <li>refresh token</li>
+                  <li>내부 서비스 주소</li>
+                  <li>내부 호출용 헤더와 민감한 운영 정보</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+        "dashboard-bff-design": {
+          kicker: "FLOW 04 · STEP 01 · DASHBOARD BFF · DESIGN TBD",
+          title: "Dashboard BFF는 화면 전용 조합 API 설계입니다",
+          sections: [
+            {
+              title: "왜 BFF를 두나",
+              html: `
+                <pre>Frontend
+→ Dashboard BFF
+→ Gateway
+→ 여러 도메인 서비스
+→ Dashboard BFF가 화면 JSON 조합
+→ Frontend</pre>
+                <p>
+                  대시보드는 여러 위젯의 데이터를 한 화면에서 사용합니다.
+                  Frontend가 도메인 API를 각각 호출하는 대신 BFF가 조합 책임을 가지면 화면 계약과 부분 실패 처리가 단순해집니다.
+                </p>
+              `,
+            },
+            {
+              title: "현재 확정이 필요한 계약",
+              html: `
+                <ul class="modal-list">
+                  <li>Dashboard BFF의 배포 위치와 도메인</li>
+                  <li>화면 전용 API 경로: 예를 들면 <code>/api/dashboard/summary</code></li>
+                  <li>JSESSIONID 쿠키 전달 방식과 CORS 정책</li>
+                  <li>지점, 기간, 위젯 목록 요청 파라미터</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+        "dashboard-auth-context": {
+          kicker: "FLOW 04 · STEP 02 · AUTH CONTEXT · DESIGN TBD",
+          title: "BFF는 세션을 직접 해석하지 않고 Gateway에 확인을 맡깁니다",
+          sections: [
+            {
+              title: "현재 Gateway API 재사용 후보",
+              html: `
+                <pre>Dashboard BFF
+→ GET /api/auth/me
+→ Gateway AuthController
+→ authenticated, name, username, sub</pre>
+                <p>
+                  현재 Gateway에는 <code>/api/auth/me</code>가 있으므로 BFF의 사용자 확인 API로 재사용할 수 있습니다.
+                  BFF가 브라우저의 <code>JSESSIONID</code>를 Gateway에 전달하는 방식은 배포 구조에 맞춰 확정해야 합니다.
+                </p>
+              `,
+            },
+            {
+              title: "대시보드에서 추가로 필요할 수 있는 값",
+              html: `
+                <pre>// 현재 AuthController 응답
+authenticated, name, username, sub
+
+// 첨부 예시의 대시보드 후보 값
+roles, branchId, tenantId</pre>
+                <p>
+                  추가 필드가 필요하면 <code>/api/auth/me</code>를 확장하거나 별도 내부 사용자 컨텍스트 API를 설계해야 합니다.
+                </p>
+              `,
+            },
+          ],
+        },
+        "dashboard-fanout-design": {
+          kicker: "FLOW 04 · STEP 04 · FAN-OUT · DESIGN TBD",
+          title: "위젯 API 팬아웃은 item-service부터 시작할 수 있습니다",
+          sections: [
+            {
+              title: "현재 확인된 Gateway 라우트",
+              html: `
+                <pre>- id: item-service
+  uri: http://localhost:8082
+  predicates:
+    - Path=/api/items/**</pre>
+              `,
+            },
+            {
+              title: "첨부 자료의 위젯 예시",
+              html: `
+                <pre>items / low stock
+sales / today
+procurement / pending</pre>
+                <p>
+                  item-service 외 라우트는 현재 YAML에 없습니다.
+                  실제 대시보드 위젯이 정해지면 각 도메인 API와 Gateway 라우트를 추가해야 합니다.
+                </p>
+              `,
+            },
+            {
+              title: "BFF 정책",
+              html: `
+                <ul class="modal-list">
+                  <li>위젯 API를 병렬 호출합니다.</li>
+                  <li>필수 위젯과 선택 위젯을 구분합니다.</li>
+                  <li>timeout과 오류를 위젯 단위로 격리합니다.</li>
+                  <li>부분 실패가 전체 화면 실패로 번지지 않게 합니다.</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+        "dashboard-summary-contract": {
+          kicker: "FLOW 04 · STEP 08 · SUMMARY JSON · DESIGN TBD",
+          title: "Dashboard BFF는 화면 전용 JSON을 조합합니다",
+          sections: [
+            {
+              title: "응답 DTO 후보",
+              html: `
+                <pre>{
+  "widgets": {
+    "items": { "status": "ok", "data": [] },
+    "sales": { "status": "tbd", "data": null },
+    "procurement": { "status": "tbd", "data": null }
+  },
+  "partial": true,
+  "lastUpdated": "..."
+}</pre>
+                <p>
+                  실제 위젯 이름과 필드는 대시보드 요구사항에 맞춰 확정해야 합니다.
+                  <code>partial</code>과 위젯별 상태를 두면 일부 API 실패를 화면에서 구분할 수 있습니다.
+                </p>
+              `,
+            },
+            {
+              title: "브라우저 응답에서 제거할 값",
+              html: `
+                <ul class="modal-list">
+                  <li>access token, refresh token</li>
+                  <li>내부 서비스 주소</li>
+                  <li>내부 라우팅 헤더</li>
+                  <li>운영 로그와 민감한 오류 원문</li>
+                </ul>
+              `,
+            },
+          ],
+        },
+      };
+
+      const initialParams = new URLSearchParams(window.location.search);
+      let activeFlow = initialParams.get("flow") ?? "login";
+      let activeStage = initialParams.get("stage") ?? "";
+      let activeView = initialParams.get("view") === "simple" ? "simple" : "detail";
+      let detailPanelCollapsed = initialParams.get("detailPanel") === "collapsed";
+
+      if (!flowTabs.some((flow) => flow.id === activeFlow)) {
+        activeFlow = "login";
+      }
+
+      function getActiveFlowDefinition() {
+        return flowDefinitions[activeFlow];
+      }
+
+      function ensureActiveStage() {
+        const flowDefinition = getActiveFlowDefinition();
+
+        if (
+          flowDefinition &&
+          !flowDefinition.routeStages.some((stage) => stage.id === activeStage)
+        ) {
+          activeStage = flowDefinition.routeStages[0].id;
+        }
+      }
+
+      ensureActiveStage();
+
+      function actorLogo(actorId, mini = false) {
+        const logo = logos[actorId];
+        const sizeClass = mini ? "mini-actor-icon" : "actor-icon";
+
+        return `
+          <span class="${sizeClass}">
+            <img
+              alt="${logo.alt}"
+              class="${logo.className}"
+              src="${logo.src}"
+            />
+          </span>
+        `;
+      }
+
+      function renderTabs() {
+        document.querySelector("#flow-tabs").innerHTML = flowTabs
+          .map(
+            (flow) => `
+              <button
+                class="flow-tab ${flow.id === activeFlow ? "active" : ""}"
+                data-flow="${flow.id}"
+                type="button"
+              >
+                <span class="tab-number">${flow.number}</span>
+                <span>
+                  <strong>${flow.title}</strong>
+                  <span>${flow.subtitle}</span>
+                </span>
+              </button>
+            `,
+          )
+          .join("");
+      }
+
+      function renderFlowRail(flowDefinition) {
+        const { actorSequence: flowActors, routeStages: flowRoutes } =
+          flowDefinition;
+
+        return `
+          <aside class="actor-rail flow-rail">
+            <span class="rail-label">CLICK A ROUTE · SELECT STEP</span>
+            ${
+              detailPanelCollapsed
+                ? `
+                  <button class="detail-restore-button detail-inline-restore" data-detail-panel-open type="button">
+                    <span>상세 영역 다시 열기</span>
+                    <b>↑</b>
+                  </button>
+                `
+                : ""
+            }
+            <div class="route-stack">
+              ${flowActors
+                .map((sequenceActor, index) => {
+                  const actor = actors[sequenceActor.id];
+                  const route = flowRoutes[index];
+
+                  return `
+                    <div class="flow-actor">
+                      ${actorLogo(sequenceActor.id)}
+                      <div>
+                        <strong>${actor.label}</strong>
+                        <span>${sequenceActor.meta}</span>
+                      </div>
+                    </div>
+                    ${
+                      route
+                        ? `
+                          <div class="route-connector">
+                            <button
+                              class="route-control ${route.tone ?? ""} ${route.id === activeStage ? "active" : ""}"
+                              data-stage="${route.id}"
+                              type="button"
+                            >
+                              <span class="route-arrow">↓</span>
+                              <span>
+                                <span>STEP ${route.number} · ${route.protocol}</span>
+                                <strong>${route.label}</strong>
+                              </span>
+                            </button>
+                          </div>
+                        `
+                        : ""
+                    }
+                  `;
+                })
+                .join("")}
+            </div>
+          </aside>
+        `;
+      }
+
+      function renderSelectedStage(flowDefinition) {
+        const stage = flowDefinition.routeStages.find(
+          (route) => route.id === activeStage,
+        );
+
+        return `
+          <div class="stage-main stage-detail-grid">
+            <div class="detail-panel-toolbar">
+              <button
+                aria-label="오른쪽 상세 영역 접기"
+                class="detail-collapse-button"
+                data-detail-panel-close
+                type="button"
+              >
+                <span>상세 영역 접기</span>
+                <b>×</b>
+              </button>
+            </div>
+            <section class="selection-card exchange-card">
+              <div class="selection-card-head">
+                <div>
+                  <span class="selection-kicker">STEP ${stage.number} · WHAT MOVES</span>
+                  <h3>${stage.title}</h3>
+                  <p>${stage.summary}</p>
+                </div>
+                <span class="selected-chip ${stage.tone ?? ""}">${stage.selectedLabel ?? "SELECTED"}</span>
+              </div>
+              <div class="direction-line">
+                ${actorLogo(stage.from, true)}
+                <span>${actors[stage.from].label}</span>
+                <span class="trace-arrow">→</span>
+                ${actorLogo(stage.to, true)}
+                <span>${actors[stage.to].label}</span>
+                <span>· ${stage.protocol}</span>
+              </div>
+              <dl class="exchange-list">
+                ${stage.exchange
+                  .map(
+                    ([label, value, description]) => `
+                      <div class="exchange-row">
+                        <dt>${label}</dt>
+                        <dd>
+                          <strong class="exchange-value">${value}</strong>
+                          <span class="exchange-description">${description}</span>
+                        </dd>
+                      </div>
+                    `,
+                  )
+                  .join("")}
+              </dl>
+              ${stage.note ? `<p class="exchange-note">${stage.note}</p>` : ""}
+            </section>
+
+            <section class="selection-card evidence-card">
+              <div class="selection-card-head">
+                <div>
+                  <span class="selection-kicker">EVIDENCE & EXPLANATION</span>
+                  <h3>이 단계의 상세 자료</h3>
+                  <p>발표 시 더 설명이 필요한 근거만 골라 팝업으로 열 수 있습니다.</p>
+                </div>
+                <span class="evidence-count">${String(stage.evidence.length).padStart(2, "0")} ITEMS</span>
+              </div>
+              <div class="evidence-list">
+                ${
+                  stage.evidence.length
+                    ? stage.evidence
+                        .map(
+                          (item) => `
+                            <article class="evidence-item">
+                              <div>
+                                <span>${item.kicker}</span>
+                                <strong>${item.title}</strong>
+                                <p>${item.description}</p>
+                              </div>
+                              <button class="detail-button" data-detail="${item.detailId}" type="button">
+                                상세 보기
+                              </button>
+                            </article>
+                          `,
+                        )
+                        .join("")
+                    : `
+                      <div class="empty-evidence">
+                        ${flowDefinition.emptyEvidence}
+                      </div>
+                    `
+                }
+              </div>
+            </section>
+          </div>
+        `;
+      }
+
+      function renderDetailRestoreBar() {
+        return `
+          <div class="detail-restore-bar">
+            <button class="detail-restore-button" data-detail-panel-open type="button">
+              <span>오른쪽 상세 영역을 접었습니다</span>
+              <strong>상세 영역 다시 열기</strong>
+              <b>↑</b>
+            </button>
+          </div>
+        `;
+      }
+
+      function renderViewTabs() {
+        return `
+          <div class="flow-view-tabs" aria-label="플로우 보기 방식">
+            <button
+              class="flow-view-tab ${activeView === "detail" ? "active" : ""}"
+              data-view="detail"
+              type="button"
+            >
+              상세 플로우
+            </button>
+            <button
+              class="flow-view-tab ${activeView === "simple" ? "active" : ""}"
+              data-view="simple"
+              type="button"
+            >
+              간단 플로우
+            </button>
+          </div>
+        `;
+      }
+
+      function renderSimpleFlow(flowDefinition) {
+        return `
+          <section class="simple-flow-shell">
+            <div class="simple-flow-intro">
+              여러 상세 단계를 묶어 핵심 이동 경로만 빠르게 확인합니다.
+              단계 카드를 누르면 현재 위치가 강조되고, 세부 근거는 <strong>상세 플로우</strong> 탭에서 볼 수 있습니다.
+            </div>
+            <div class="simple-flow-list">
+              ${flowDefinition.simpleSequence
+                .map((sequenceActor) => {
+                  const actor = actors[sequenceActor.id];
+                  const simpleRoute = sequenceActor.route;
+                  const route = simpleRoute
+                    ? flowDefinition.routeStages.find(
+                        (stage) => stage.id === simpleRoute.stageId,
+                      )
+                    : null;
+                  const isActive =
+                    route &&
+                    (simpleRoute.stageIds ?? [route.id]).includes(activeStage);
+
+                  return `
+                    <div class="simple-actor">
+                      <div class="simple-actor-icon">
+                        ${actorLogo(sequenceActor.id)}
+                      </div>
+                      <div class="simple-actor-copy">
+                        <strong>${actor.label}</strong>
+                        <span>${sequenceActor.meta}</span>
+                      </div>
+                    </div>
+                    ${
+                      route
+                        ? `
+                          <button
+                            class="simple-route-card ${simpleRoute.tone ?? route.tone ?? ""} ${isActive ? "active" : ""}"
+                            data-simple-stage="${route.id}"
+                            type="button"
+                          >
+                            <span class="simple-route-arrow">↓</span>
+                            <span class="simple-route-copy">
+                              <span>STEP ${simpleRoute.number} · ${simpleRoute.protocol}</span>
+                              <strong>${simpleRoute.label}</strong>
+                            </span>
+                          </button>
+                        `
+                        : ""
+                    }
+                  `;
+                })
+                .join("")}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderDefinedFlow(flowDefinition) {
+        return `
+          <header class="flow-panel-head">
+            <div>
+              <h2>${flowDefinition.title}</h2>
+              <p>${flowDefinition.description}</p>
+            </div>
+            <div class="flow-panel-actions">
+              ${renderViewTabs()}
+              <span class="scope-chip">${flowDefinition.scope}</span>
+            </div>
+          </header>
+          ${
+            activeView === "simple"
+              ? renderSimpleFlow(flowDefinition)
+              : `
+                <div class="stage-grid ${detailPanelCollapsed ? "detail-collapsed" : ""}">
+                  ${renderFlowRail(flowDefinition)}
+                  ${detailPanelCollapsed ? renderDetailRestoreBar() : renderSelectedStage(flowDefinition)}
+                </div>
+              `
+          }
+        `;
+      }
+
+      function renderFlow() {
+        const flowDefinition = getActiveFlowDefinition();
+
+        ensureActiveStage();
+        renderTabs();
+        document.querySelector("#current-scope").textContent =
+          flowDefinition.heroScope;
+        document.querySelector("#flow-content").innerHTML =
+          renderDefinedFlow(flowDefinition);
+      }
+
+      function openModal(detailId) {
+        const detail = details[detailId];
+        const modal = document.querySelector("#modal");
+        const backdrop = document.querySelector("#modal-backdrop");
+
+        if (!detail) return;
+
+        modal.innerHTML = `
+          <header class="modal-head">
+            <div>
+              <span class="modal-kicker">${detail.kicker}</span>
+              <h2 id="modal-title">${detail.title}</h2>
+            </div>
+            <button aria-label="상세 팝업 닫기" class="modal-close" data-modal-close type="button">×</button>
+          </header>
+          <div class="modal-body">
+            ${detail.sections
+              .map(
+                (section) => `
+                  <section class="modal-section">
+                    <h3>${section.title}</h3>
+                    ${section.html}
+                  </section>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+
+        backdrop.classList.add("open");
+        backdrop.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        modal.querySelector("[data-modal-close]").focus();
+      }
+
+      function closeModal() {
+        const backdrop = document.querySelector("#modal-backdrop");
+        backdrop.classList.remove("open");
+        backdrop.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+      }
+
+      document.addEventListener("click", (event) => {
+        const flowButton = event.target.closest("[data-flow]");
+        const viewButton = event.target.closest("[data-view]");
+        const stageButton = event.target.closest("[data-stage]");
+        const simpleStageButton = event.target.closest("[data-simple-stage]");
+        const detailPanelCloseButton = event.target.closest("[data-detail-panel-close]");
+        const detailPanelOpenButton = event.target.closest("[data-detail-panel-open]");
+        const detailButton = event.target.closest("[data-detail]");
+        const closeButton = event.target.closest("[data-modal-close]");
+        const backdrop = event.target.closest("#modal-backdrop");
+
+        if (flowButton) {
+          activeFlow = flowButton.dataset.flow;
+          activeStage = "";
+          renderFlow();
+        }
+
+        if (viewButton) {
+          activeView = viewButton.dataset.view;
+          renderFlow();
+        }
+
+        if (stageButton) {
+          activeStage = stageButton.dataset.stage;
+          renderFlow();
+          requestAnimationFrame(() => {
+            const activeControl = document.querySelector('.route-control.active');
+            if (activeControl) {
+              activeControl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          });
+        }
+
+        if (simpleStageButton) {
+          activeStage = simpleStageButton.dataset.simpleStage;
+          renderFlow();
+          requestAnimationFrame(() => {
+            const activeControl = document.querySelector('.simple-route-card.active');
+            if (activeControl) {
+              activeControl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          });
+        }
+
+        if (detailPanelCloseButton) {
+          detailPanelCollapsed = true;
+          renderFlow();
+        }
+
+        if (detailPanelOpenButton) {
+          detailPanelCollapsed = false;
+          renderFlow();
+        }
+
+        if (detailButton) {
+          openModal(detailButton.dataset.detail);
+        }
+
+        if (closeButton || backdrop === event.target) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      renderFlow();
+
+      const initialDetail = initialParams.get("detail");
+
+      if (initialDetail) {
+        openModal(initialDetail);
+      }
+    </script>
+  </body>
+</html>
