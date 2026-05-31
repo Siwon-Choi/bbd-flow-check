@@ -40,9 +40,10 @@
 
       body {
         min-width: 320px;
-        height: 100vh;
+        min-height: 100vh;
         margin: 0;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
         background:
           radial-gradient(circle at 96% 2%, rgba(58, 150, 229, 0.1), transparent 25rem),
           #edf3f8;
@@ -58,10 +59,9 @@
       }
 
       .page-shell {
-        height: 100vh;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
       }
 
       .topbar {
@@ -142,10 +142,8 @@
       main {
         width: min(100% - 52px, 1580px);
         margin: 0 auto;
-        padding: 24px 0 0;
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
+        padding: 24px 0 48px;
+        flex: 1 0 auto;
         display: flex;
         flex-direction: column;
       }
@@ -354,13 +352,12 @@
 
       .flow-panel {
         min-width: 0;
+        min-height: 860px;
         border: 1px solid var(--line);
         border-radius: 18px;
         overflow: hidden;
         background: var(--panel);
         box-shadow: var(--shadow);
-        flex: 1;
-        min-height: 0;
         display: flex;
         flex-direction: column;
       }
@@ -440,8 +437,7 @@
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         flex: 1;
-        min-height: 0;
-        overflow: hidden;
+        min-height: 780px;
       }
 
       .actor-rail {
@@ -557,7 +553,6 @@
       .stage-main {
         min-width: 0;
         padding: 25px;
-        overflow-y: auto;
       }
 
       .stage-note {
@@ -1102,9 +1097,8 @@
 
       .simple-flow-shell {
         flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        padding: 24px 26px 34px;
+        min-height: 780px;
+        padding: 24px 26px 68px;
         background: #f8fbfd;
       }
 
@@ -1185,11 +1179,10 @@
         display: grid;
         width: min(100% - 32px, 560px);
         min-height: 74px;
-        grid-template-columns: 30px minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr);
         align-items: center;
-        gap: 10px;
         margin: 5px auto;
-        padding: 13px 16px;
+        padding: 13px 14px;
         border: 1px solid #dce9f1;
         border-radius: 11px;
         color: #6691a9;
@@ -1227,6 +1220,8 @@
         display: grid;
         width: 27px;
         height: 27px;
+        grid-column: 2;
+        justify-self: center;
         place-items: center;
         border-radius: 50%;
         color: #1684bd;
@@ -1234,6 +1229,12 @@
         font-family: "Inter", sans-serif;
         font-size: 17px;
         font-weight: 800;
+      }
+
+      .simple-route-copy {
+        min-width: 0;
+        grid-column: 3;
+        padding-left: 16px;
       }
 
       .simple-route-card.redis-planned .simple-route-arrow {
@@ -1846,6 +1847,10 @@
           padding: 11px 12px;
         }
 
+        .simple-route-copy {
+          padding-left: 12px;
+        }
+
         .detail-collapsed .flow-rail {
           padding: 24px 20px;
         }
@@ -1907,7 +1912,7 @@
 
       .site-footer {
         flex-shrink: 0;
-        padding: 12px 38px;
+        padding: 25px 38px 27px;
         border-top: 1px solid rgba(209, 222, 234, 0.7);
         background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(10px);
